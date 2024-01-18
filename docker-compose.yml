@@ -1,0 +1,23 @@
+version: "3.3"
+services:
+  web:
+   build: .
+   command: python /code/manage.py runserver 0.0.0.0:8000
+   volumes:
+    - .:/code
+   environment:
+    - "DJANGO_SECRET_KEY=M44C5K3YX83P3x_CQyaOvTRAuLRX09H6WrPgEtpK1sqzJ-kHnzI"
+    - "DJANGO_ALLOWED_HOSTS=127.0.0.1;"
+    - "DJANGO_DEBUG=True"
+   ports:
+    - 8000:8000
+   depends_on:
+    - db
+  db:
+   image: postgres:13
+   volumes:
+    - postgres_data:/var/lib/postgresql/data/
+   environment:
+    - "POSTGRES_HOST_AUTH_METHOD=trust"
+volumes:
+  postgres_data:

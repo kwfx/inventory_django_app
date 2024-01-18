@@ -1,0 +1,6 @@
+.venv
+invapp_env
+.vscode
+staticfiles
+*.pyc
+*.pdf

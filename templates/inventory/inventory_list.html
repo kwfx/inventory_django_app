@@ -1,0 +1,75 @@
+{% extends "_base.html" %}
+{% block title %}Inventaires{% endblock title %}
+{% block content %}
+<!-- <div>
+    <form name="form-search" method="get" action="{% url 'search_inventory' %}">
+        {% csrf_token %}
+        <input name="qzone" class="input-search" autofocus onkeyup="onSearchKeyUp(event)" value="{{request.GET.qzone}}"></input>
+        <input name="qproduct" class="input-search" autofocus onkeyup="onSearchKeyUp(event)" value="{{request.GET.qproduct}}"></input>
+    </form>
+</div> -->
+{% if request.GET.not_found %}
+<span>
+    NOT FOUND
+</span>
+{% endif %}
+<a href="{% url 'inventory_create' %}" class="btn btn-primary" role="button" aria-disabled="true">Créer</a>
+<table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Zone</th>
+        <th scope="col">Nombre de comptage</th>
+        <th scope="col">Réf Interne</th>
+        <th scope="col">Ancien réf</th>
+        <th scope="col">Désignation</th>
+        <th scope="col">Unité de vente</th>
+        <th scope="col">Fournisseur</th>
+        <th scope="col">Quantité</th>
+        <th scope="col">Lot</th>
+        <th scope="col">Date péremption</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for inv in inventory_list %}
+            <tr style="background-color: azure;">
+                <td scope="col"><a href="{% url 'inventory_update' inv.id %}">{{inv.zone.name}}</a></td>
+                <td scope="col">{{inv.num_inventory}}</td>
+                <td scope="col">{{inv.product.internal_ref}}</td>
+                <td scope="col">{{inv.product.old_ref}}</td>
+                <td scope="col">{{inv.product.supplier}}</td>
+                <td scope="col">{{inv.product.sale_uom}}</td>
+                <td scope="col" colspan="4"></td>
+                <td scope="col">
+                    <a type="button" class="fa fa-trash text-danger" data-bs-toggle="modal" data-bs-target="#exampleModal{{inv.id}}"></a>
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal{{inv.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel{{inv.id}}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel{{inv.id}}">Are Your Sure You Want To Delete This?</h5>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="{% url 'delete_inventory' inv.id %}" type="button" class="btn btn-primary">Yes, Delete</a>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </td> 
+            </tr>
+            {% for inv_line in inv.inventory_lines.all %}
+            <tr>
+                <td scope="col" colspan="6"></td>
+                <td scope="col">{{inv_line.quantity}}</td>
+                <td scope="col">{{inv_line.quantity_uom}}</td>
+                <td scope="col">{{inv_line.lot}}</td>
+                <td scope="col">{{inv_line.expiration_date}}</td>
+                <td scope="col"></td>
+            </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock content %}
