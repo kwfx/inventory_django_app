@@ -1,0 +1,176 @@
+{% extends "_base.html" %}
+{% block title %}Inventaire Form{% endblock title %}
+
+{% block content %}
+  <form action="" method="post" enctype="multipart/form-data">
+
+    {% for hidden_field in form.hidden_fields %}
+      {{ hidden_field.errors }}
+      {{ hidden_field }}
+    {% endfor %}
+
+    {% csrf_token %}
+
+    {{ form.management_form }}
+    {{ form.non_form_errors }}
+
+    <div>
+      <div class="row m-0">
+        <div class="col p-1 fw-bold" style="max-width:230px">
+          Zone:
+        </div>
+        <div class="col p-1">
+          {{ object.zone.name }}
+        </div>
+      </div>
+      <div class="row m-0">
+        <div class="col p-1 fw-bold" style="max-width:230px">
+          Numéro de comptage:
+        </div>
+        <div class="col p-1">
+          {{ object.num_inventory }}
+        </div>
+      </div>
+      <div class="row m-0">
+        <div class="col p-1 fw-bold" style="max-width:230px">
+          Nom de l’agent d’inventaire:
+        </div>
+        <div class="col p-1">
+          {{ object.name_agent }}
+        </div>
+      </div>
+    </div>
+
+    {% for inv_form in form.forms %}
+      <hr>
+      {% for hidden_field in inv_form.hidden_fields %}
+        {{ hidden_field.errors }}
+      {% endfor %}
+      
+      {% if inv_form.nested %}
+      <div class="table-responsive mt-0 product-line">
+        <table class="table m-0">
+          <tbody>
+              <!-- formset non forms errors -->
+              {% for error in inv_form.non_form_errors %}
+                  <span style="color: red">{{ error }}</span>
+              {% endfor %}
+              {{ inv_form.management_form }}
+              <tr id="lines-{{ forloop.counter0 }}" class="hide_all product"> 
+                  {{ inv_form.id }}
+                  <td>
+                    <div class="form-inline my-2 my-lg-0 d-flex">
+                      <input class="form-control mr-sm-2 mx-1" type="search" placeholder="Search" aria-label="Search">
+                      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                    </div>
+                  </td>
+                  {% for field in inv_form.visible_fields %}
+                      <td {% if field.name == 'DELETE' %} style="display: none;" {% endif%}>
+                          {{field}}
+                          {% for error in field.errors %}
+                              <span style="color: red">{{ error }}</span>
+                          {% endfor %}
+                      </td>
+                  {% endfor %}
+                  <td>
+                    {{inv_form.instance.product.get_sale_uom_display }}
+                  </td>
+                  <td>
+                    {{inv_form.instance.product.supplier}}
+                  </td>
+                  <td>
+                      <a type="button" class="fa fa-trash text-danger" onclick="_onClickDeleteLine(event,'{{inv_form.instance.pk}}')"></a>
+                  </td>            
+              </tr>
+          </tbody>
+        </table>  
+        {{ inv_form.nested.management_form }}
+        {{ inv_form.nested.non_form_errors }}
+        <table class="table card-header">
+            <thead class="text-secondary">
+                <th>Lot</th>
+                <th>Quantité<span style="color: red;" class="required">*</span></th>
+                <th>Unité <span style="color: red;" class="required">*</span></th>
+                <th>Date péremption<span style="color: red;" class="required">*</span></th>
+                <th></th>
+            </thead>
+            <tbody class="lot-lines">
+                <!-- formset non forms errors -->
+                {% for error in inv_form.nested.non_form_errors %}
+                    <span style="color: red">{{ error }}</span>
+                {% endfor %}
+                <script type="text/html" id="lotline-template">
+                  <tr id="lines-__prefix__" class="lot-line hide_all">
+                      {% for fields in inv_form.nested.empty_form.hidden_fields %}
+                          {{ fields }}
+                      {% endfor %}
+                  
+                      {% for fields in inv_form.nested.empty_form.visible_fields %}
+                        <td {% if field.name == 'DELETE' %} style="display: none;" {% endif%}>
+                          {{fields}}
+                        </td>
+                      {% endfor %}
+                      <td>
+                        <a type="button" class="fa fa-trash text-danger" onclick="_onClickDeleteLine(event,'{{formss.instance.pk}}')"></a>
+                      </td> 
+                  </tr>
+                </script>
+                {% for formss in inv_form.nested.forms %}
+                    {{ formss.management_form }}
+                    <tr id="lot-line-{{ forloop.counter0 }}" class="hide_all lot-line"> 
+                        {{ formss.id }}
+                        {% for field in formss.visible_fields %}
+                            <td {% if field.name == 'DELETE' %} style="display: none;" {% endif%}>
+                                {{field}}
+                                {% for error in field.errors %}
+                                    <span style="color: red">{{ error }}</span>
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                        <td>
+                            <a type="button" class="fa fa-trash text-danger" onclick="_onClickDeleteLine(event,'{{formss.instance.pk}}')"></a>
+                        </td>            
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfooter>
+              <tr>
+                <td>
+                  <a href="#" class="fa fa-plus-square fs-5 add-lotline text-decoration-none"></a>
+                </td>
+              </tr>
+            </tfooter>
+        </table>
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    <hr>
+
+    <p>
+      <input type="submit" value="Sauvegarder">
+      &nbsp; &nbsp;
+      <a href="{{ objectf.get_absolute_url  }}">Annuler</a>
+    </p>
+  </form>
+
+  <div class="modal" id="dialog-delete" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Suppression de la ligne</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Confirmer ?</p>
+        </div>
+        <div class="modal-footer">
+          <a type="button" class="btn btn-primary btn-confirm">Oui</a>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div> 
+{% endblock content %}
+
+

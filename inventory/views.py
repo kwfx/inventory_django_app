@@ -1,17 +1,20 @@
+import json
 from typing import Any
 from django.db.models.query import QuerySet
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
 from django.urls import reverse
-from django.views.generic import ListView, DetailView, RedirectView, CreateView, UpdateView
+from django.views.generic import ListView, DetailView, RedirectView, CreateView, UpdateView, FormView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from .models import Inventory, InventoryLines
-from .forms import InventoryForm, InvLinesFormSet
+from .models import Inventory, Product, InventoryProductLines, ProductLotLines
+from .forms import ProductLotLinesFormSet, InventoryFormSet
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django import forms
 from django.contrib import messages
-
+from django.core import serializers
+from django.views.generic.detail import SingleObjectMixin
+from dal import autocomplete
 
 
 class InventoryListView(LoginRequiredMixin, ListView):
@@ -20,123 +23,98 @@ class InventoryListView(LoginRequiredMixin, ListView):
     template_name = "inventory/inventory_list.html"
     ordering = ['zone', 'num_inventory']
     login_url = "account_login"
-
-
-class InventoryFormView(LoginRequiredMixin, DetailView):
-    model = Inventory
-    template_name = "inventory/inventory_detail.html"
-    login_url = "account_login"
-    queryset = Inventory.objects.all()
-
-    def get(self, request, *args, **kwargs):
-        res = super().get(request, *args, **kwargs)
-        self.object.user = request.user
-        return res
-
-
-# class SearchRedictView(RedirectView):
-
-#     def get_redirect_url(self, *args, **kwargs):
-#         title = self.request.POST.get("search_input")
-#         books = Book.objects.all().filter(title=title)
-#         if not books:
-#             return f"{reverse('book_list_view')}?not_found=1"
-#         return reverse("book_form_view", args=[books[0].id])
-
-
-class SearchInventoryView(ListView):
-    model = Inventory
-    context_object_name = "inventory_list"
-    template_name = "inventory/inventory_search.html"
-
+    
     def get_queryset(self) -> QuerySet[Any]:
-        product_search_query = self.request.GET.get("qproduct")
-        zone_search_query = self.request.GET.get("qzone")
-        return self.model.objects.all().filter(
-            Q(zone__name__icontains=zone_search_query) | Q(product__internal_ref__icontains=product_search_query)
-        )
+        searchby = self.request.GET.get("searchby")
+        search_query = self.request.GET.get("q")
+        if not search_query:
+            return self.model.objects.all()
+        else:
+            if searchby == 'zone':
+                q_filter = Q(zone__name__icontains=search_query)
+            elif searchby == 'product':
+                q_filter = Q(product__internal_ref__icontains=search_query)
+            else:
+                q_filter = Q(num_inventory=search_query)
+            return self.model.objects.all().filter(q_filter)
 
 
-class InventoryInline():
-    form_class = InventoryForm
+class InventoryCreateView(CreateView):
+
     model = Inventory
-    template_name = "inventory/inventory_create.html"
+    template_name = "inventory/inv_create.html"
+    fields = [
+        "zone", "num_inventory", "name_agent"
+    ]
 
     def form_valid(self, form):
-        named_formsets = self.get_named_formsets()
-        if not all((x.is_valid() for x in named_formsets.values())):
-            return self.render_to_response(self.get_context_data(form=form))
+        messages.add_message(self.request, messages.SUCCESS, "The Inventory was added.")
 
-        self.object = form.save()
+        return super().form_valid(form)
 
-        # for every formset, attempt to find a specific formset save function
-        # otherwise, just save.
-        for name, formset in named_formsets.items():
-            formset_save_func = getattr(self, 'formset_{0}_valid'.format(name), None)
-            if formset_save_func is not None:
-                formset_save_func(formset)
-            else:
-                formset.save()
-        return redirect('inventory_list_view')
 
-    def formset_lines_valid(self, formset):
+class InventoryUpdateView(SingleObjectMixin, FormView):
+    """
+    For adding books to a Inventory, or editing them.
+    """
+
+    model = Inventory
+    template_name = "inventory/inv_update.html"
+    fields = [
+        "zone", "num_inventory", "name_agent"
+    ]
+
+    def get(self, request, *args, **kwargs):
+        # The Inventory we're editing:
+        self.object = self.get_object(queryset=Inventory.objects.all())
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        # The Inventory we're uploading for:
+        self.object = self.get_object(queryset=Inventory.objects.all())
+        return super().post(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
         """
-        Hook for custom formset saving.Useful if you have multiple formsets
+        Use our big formset of formsets, and pass in the Publisher object.
         """
-        lines = formset.save(commit=False)  # self.save_formset(formset, contact)
-        # add this 2 lines, if you have can_delete=True parameter 
-        # set in inlineformset_factory func
-        for obj in formset.deleted_objects:
-            obj.delete()
-        for line in lines:
-            line.inventory = self.object
-            line.save()
+        return InventoryFormSet(
+            **self.get_form_kwargs(), instance=self.object
+        )
 
+    def form_valid(self, form):
+        """
+        If the form is valid, redirect to the supplied URL.
+        """
+        form.save()
+        messages.add_message(self.request, messages.SUCCESS, "Changes were saved.")
+        return HttpResponseRedirect(self.get_success_url())
 
-class InventoryCreate(InventoryInline, CreateView):
-
-    def get_context_data(self, **kwargs):
-        ctx = super(InventoryCreate, self).get_context_data(**kwargs)
-        ctx['named_formsets'] = self.get_named_formsets()
-        return ctx
-
-    def get_named_formsets(self):
-        if self.request.method == "GET":
-            return {
-                'lines': InvLinesFormSet(prefix='lines'),
-            }
-        else:
-            return {
-                'lines': InvLinesFormSet(self.request.POST or None, self.request.FILES or None, prefix='lines'),
-            }
-
-
-class InventoryUpdate(InventoryInline, UpdateView):
-
-    def get_context_data(self, **kwargs):
-        ctx = super(InventoryUpdate, self).get_context_data(**kwargs)
-        ctx['named_formsets'] = self.get_named_formsets()
-        return ctx
-
-    def get_named_formsets(self):
-        print("self.request.POST ::: ", self.request.POST)
-        return {
-            'lines': InvLinesFormSet(self.request.POST or None, self.request.FILES or None, instance=self.object, prefix='lines'),
-        }
-
-def delete_line(request, pk):
-    line = InventoryLines.objects.get(id=pk)
-    line.delete()
-    messages.success(
-            request, 'Line deleted successfully'
-            )
-    return reverse("inventory_update", args=[line.inventory.id])
+    def get_success_url(self):
+        return reverse("inventory_list_view")
 
 def delete_inventory(request, pk):
     inv = Inventory.objects.get(id=pk)
     inv.delete()
     messages.success(
-            request, 'Inventory deleted successfully'
-            )
-    return redirect('inventory_list_view')
+        request, 'Inventory deleted successfully'
+    )
+    return redirect(reverse('inventory_list_view'))
 
+def get_product_data(request, pk):
+    try:
+        product_data = Product.objects.get(id=pk)
+        json_data = serializers.serialize('json', [product_data])
+        return HttpResponse(json_data, content_type='application/json')
+    except Exception as er:
+        print(er)
+        return HttpResponse(er, content_type='application/json')
+    
+
+def ProductAutocomplete(request):
+    qs = Product.objects.all()
+    term = request.GET.get("term")
+    if term:
+        qs = qs.filter(old_ref__istartswith=term)
+    data = [{"label": str(r), "id": str(r.id)} for r in qs]
+    return HttpResponse(json.dumps(data), content_type='application/json')

@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 import uuid
 import math
+from datetime import datetime
 
 class Product(models.Model):
     id = models.UUIDField(
@@ -10,10 +11,10 @@ class Product(models.Model):
         default=uuid.uuid4,
         editable=False
     )
-    internal_ref = models.CharField(max_length=200)
-    old_ref = models.CharField(max_length=200)
-    designation = models.CharField(max_length=200)
-    supplier = models.CharField(max_length=200)
+    internal_ref = models.CharField(max_length=200, verbose_name="Référence interne")
+    old_ref = models.CharField(max_length=200, verbose_name="Ancien référence")
+    designation = models.CharField(max_length=200, verbose_name="Désignation")
+    supplier = models.CharField(max_length=200, verbose_name="Fournisseur")
     sale_uom = models.CharField(max_length=20, choices=[
         ("unit", "Unité"),
         ("coffret", "Coffret"),
@@ -21,42 +22,13 @@ class Product(models.Model):
         ("BTE", "Boite"),
         ("carton", "Carton"),
         ("mc", "MC"),
-    ], default="unit")
+    ], default="unit", verbose_name="Unité de vente")
 
     def __str__(self):
-        return f"Product : {self.internal_ref} - {self.designation}"
+        return f"{self.internal_ref} - {self.designation}"
 
     def get_absolute_url(self):
         return reverse("product_form_view", args=[self.id])
-
-    # def get_next_record(self):
-    #     all_recs = Book.objects.all().order_by(self.orderby)
-    #     if not all_recs: return
-    #     next_records = all_recs.filter(id__gt=self.__dict__.get(self.orderby))
-    #     if next_records:
-    #         return reverse("book_form_view", args=[next_records.first().id])
-    #     else:
-    #         return reverse("book_form_view", args=[all_recs.first().id])
-
-    # def get_previous_record(self):
-    #     all_recs = Book.objects.all().order_by(f"-{self.orderby}")
-    #     if not all_recs:
-    #         return
-    #     next_records = all_recs.filter(id__lt=self.__dict__.get(self.orderby))
-    #     if next_records:
-    #         return reverse("book_form_view", args=[next_records[0].id])
-    #     return reverse("book_form_view", args=[all_recs.first().id])
-
-    # @property
-    # def overall_rate(self):
-    #     return self.reviews.aggregate(overall_rate=models.Avg("rate"))["overall_rate"]
-
-    # @property
-    # def current_user_rate(self):
-    #     if self.user.is_authenticated:
-    #         user_rev = self.reviews.filter(user=self.user)
-    #         return self.reviews.filter(user=self.user)[0].rate if user_rev else 0
-    #     return 0
 
 
 class Zone(models.Model):
@@ -75,15 +47,25 @@ class Inventory(models.Model):
     zone = models.ForeignKey(Zone, on_delete=models.CASCADE, related_name="inventories")
     name_agent = models.CharField("Nom de l’agent d’inventaire", max_length=200)
     num_inventory = models.IntegerField("Nombre de comptage")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="inventories")
 
     def get_absolute_url(self):
-        return reverse("inventory_form_view", args=[self.id])
+        return reverse("inventory_update", args=[self.id])
     
     def __str__(self) -> str:
-        return f"Inventaire : {self.zone}"
+        return f"Inventaire : {self.zone} - Comptage: {self.num_inventory}"
     
-class InventoryLines(models.Model):
+
+class InventoryProductLines(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name="inventory_product_lines")
+
+    @property
+    def product_supplier(self):
+        return self.product.supplier
+
+
+class ProductLotLines(models.Model):
+    lot = models.CharField(max_length=200)
     quantity = models.FloatField("Quantité")
     quantity_uom = models.CharField(max_length=20, choices=[
         ("unit", "Unité"),
@@ -93,6 +75,5 @@ class InventoryLines(models.Model):
         ("carton", "Carton"),
         ("mc", "MC"),
     ], default="unit")
-    expiration_date = models.DateField("Date péremption")
-    lot = models.CharField(max_length=200)
-    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name="inventory_lines")
+    expiration_date = models.DateField("Date péremption", null=True, blank=True)
+    inventory_product_line = models.ForeignKey(InventoryProductLines, on_delete=models.CASCADE, related_name="product_lot_lines")

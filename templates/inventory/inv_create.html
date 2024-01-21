@@ -1,0 +1,25 @@
+{% extends "_base.html" %}
+{% block title %}Inventaire Form{% endblock title %}
+{% block content %}
+  <form action="" method="post">
+
+    {% for hidden_field in form.hidden_fields %}
+      {{ hidden_field.errors }}
+      {{ hidden_field }}
+    {% endfor %}
+
+    {% csrf_token %}
+
+    {{ form.non_form_errors }}
+
+    <table>
+      {{ form.as_table }}
+    </table>
+
+    <p>
+      <input type="submit" value="Add publisher">
+      &nbsp; &nbsp;
+    </p>
+  </form>
+
+{% endblock content %}

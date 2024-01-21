@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 from environs import Env
 import socket
@@ -46,6 +46,8 @@ DEFAULT_FROM_EMAIL = "admin@djangobookstore.com" # new
 # Application definition
 
 INSTALLED_APPS = [
+    'dal',
+    'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,6 +62,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     # LOCAL
     "pages.apps.PagesConfig",
     "inventory.apps.InventoryConfig", 
@@ -67,7 +70,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.cache.UpdateCacheMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -109,6 +112,17 @@ DATABASES = {
     }
 }
 
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
 
 AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.RemoteUserBackend',
@@ -118,7 +132,7 @@ AUTHENTICATION_BACKENDS = (
 
 
 # django-allauth config
-SITE_ID = 1
+SITE_ID = 2
 # ACCOUNT_SESSION_REMEMBER = True
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
@@ -166,7 +180,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 CACHE_MIDDLEWARE_ALIAS = "default"
 CACHE_MIDDLEWARE_SECONDS = 0
 CACHE_MIDDLEWARE_KEY_PREFIX = ""
-
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
 if not DEBUG:
     SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
     SECURE_HSTS_SECONDS = env.int("DJANGO_SECURE_HSTS_SECONDS", default=2592000) # 30 days
@@ -190,3 +207,4 @@ hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
 INTERNAL_IPS = [ip[:-1] + "1" for ip in ips]
 ALLOWED_HOSTS += INTERNAL_IPS
 print("ALLOWED_HOSTS ::: ", ALLOWED_HOSTS)
+ALLOWED_HOSTS = ['*']
