@@ -116,5 +116,5 @@ def ProductAutocomplete(request):
     term = request.GET.get("term")
     if term:
         qs = qs.filter(old_ref__istartswith=term)
-    data = [{"label": str(r), "id": str(r.id)} for r in qs]
+    data = [{"label": str(r), "value": str(r), "id": str(r.id), "option": {"selected": False}} for r in qs]
     return HttpResponse(json.dumps(data), content_type='application/json')
