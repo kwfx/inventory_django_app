@@ -15,3 +15,26 @@
     margin: 0;
     padding: 5px 10px;
 }
+.inventory-list{
+    .inv-line {
+        background-color: azure;
+    }
+    .prod-line {
+        background-color: rgb(249, 234, 222);
+    }
+    #id_zone{
+        width: 200px;
+        margin-right: 4px;
+    }
+    #id_num_inv{
+        width: 100px;
+        margin-right: 4px;
+    }
+    #id_product_ref{
+        width: 200px;
+    }
+    label {
+        font-weight: bold;
+        line-height: 2em;
+    }
+}

@@ -3,23 +3,25 @@
 {% block content %}
 {% if request.GET.not_found %}
 <span>
-    NOT FOUND
+  NOT FOUND
 </span>
 {% endif %}
-<div class="d-flex justify-content-between">
-<a href="{% url 'inventory_create' %}" class="btn btn-primary float-left" role="button" aria-disabled="true">Créer</a>
-<form class="form-inline my-2 my-lg-0 d-flex">
-    <select class="form-select" name="selectzone">
-        <option value="zone">Zone</option>
-    </select>
-    <select class="form-select" name="selectcomptage">
-        <option value="zone">Zone</option>
-    </select>
-    <input name="q" class="form-control mr-sm-2 mx-1" type="search" focus value="{{request.GET.q}}" placeholder="Search" aria-label="Search">
-    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-</form>
-</div>
-<table class="table table-hover">
+<div class="inventory-list">
+  <div class="d-flex justify-content-between mb-2">
+    <a href="{% url 'inventory_create' %}" class="btn btn-primary float-left" role="button"
+      aria-disabled="true">Créer</a>
+    <form class="form-inline my-2 my-lg-0 d-flex">
+      {{ search_form.zone.label_tag }}
+      {{ search_form.zone }}
+      {{ search_form.num_inv.label_tag }}
+      {{ search_form.num_inv }}
+      {{ search_form.product_ref.label_tag }}
+      {{ search_form.product_ref }}
+      <button class="btn btn-outline-success my-2 my-sm-0 me-1" type="submit">Search</button>
+      <button class="btn btn-outline-info my-2 my-sm-0" onclick="_seachform_clear(event)">Clear</button>
+    </form>
+  </div>
+  <table class="table table-hover">
     <thead style="position: sticky;top: 0;background-color: white;">
       <tr>
         <th scope="col">Zone</th>
@@ -29,42 +31,53 @@
         <th scope="col">Désignation</th>
         <th scope="col">Unité de vente</th>
         <th scope="col">Fournisseur</th>
-        <th scope="col">Quantité</th>
         <th scope="col">Lot</th>
+        <th scope="col">Quantité</th>
+        <th scope="col">Unité</th>
         <th scope="col">Date péremption</th>
         <th scope="col" style="width: 80px;"></th>
       </tr>
     </thead>
     <tbody>
-        {% for inv in inventory_list %}
-            <tr style="background-color: azure;">
-                <td scope="col"><a>{{inv.zone.name}}</a></td>
-                <td scope="col">{{inv.num_inventory}}</td>
-                <td scope="col">{{inv.product.internal_ref}}</td>
-                <td scope="col">{{inv.product.old_ref}}</td>
-                <td scope="col">{{inv.product.supplier}}</td>
-                <td scope="col">{{inv.product.sale_uom}}</td>
-                <td scope="col" colspan="4"></td>
-                <td scope="col">
-                    <a href="{% url 'inventory_update' inv.id %}" class="fa fa-edit p-2" title="Modifier"></a>
-                    <a type="button" class="fa fa-trash text-danger btn-delete-inventory" onclick="_onClickDeleteInventory('{{inv.id}}')" title="Supprimer"></a>
-                </td> 
-            </tr>
-            {% for inv_line in inv.inventory_lines.all %}
-            <tr>
-                <td scope="col" colspan="6"></td>
-                <td scope="col">{{inv_line.quantity}}</td>
-                <td scope="col">{{inv_line.quantity_uom}}</td>
-                <td scope="col">{{inv_line.lot}}</td>
-                <td scope="col">{{inv_line.expiration_date}}</td>
-                <td scope="col"></td>
-                <td scope="col"></td>
-            </tr>
-            {% endfor %}
-        {% endfor %}
+      {% for inv in inventory_list %}
+      <tr class="inv-line">
+        <td scope="col"><a>{{inv.zone.name}}</a></td>
+        <td scope="col">{{inv.num_inventory}}</td>
+        <td scope="col" colspan="9"></td>
+        <td scope="col">
+          <a href="{% url 'inventory_update' inv.id %}" class="fa fa-edit p-2" title="Modifier"></a>
+          <a type="button" class="fa fa-trash text-danger btn-delete-inventory"
+            onclick="_onClickDeleteInventory('{{inv.id}}')" title="Supprimer"></a>
+        </td>
+      </tr>
+      {% for prodline in inv.inventory_product_lines.all %}
+      {% if searched_product_ids == None or prodline.product.id in searched_product_ids %}
+      <tr class="prod-line">
+        <td scope="col" colspan="2"></td>
+        <td scope="col">{{prodline.product.internal_ref}}</td>
+        <td scope="col">{{prodline.product.old_ref}}</td>
+        <td scope="col">{{prodline.product.designation}}</td>
+        <td scope="col">{{prodline.product.get_sale_uom_display}}</td>
+        <td scope="col">{{prodline.product.supplier}}</td>
+        <td scope="col" colspan="5"></td>
+      </tr>
+      {% for lotline in prodline.product_lot_lines.all %}
+      <tr class="lot-line">
+        <td scope="col" colspan="7"></td>
+        <td scope="col">{{lotline.lot}}</td>
+        <td scope="col">{{lotline.quantity}}</td>
+        <td scope="col">{{lotline.get_quantity_uom_display}}</td>
+        <td scope="col">{{lotline.expiration_date|default_if_none:''}}</td>
+        <td scope="col"></td>
+        <td scope="col"></td>
+      </tr>
+      {% endfor %}
+      {% endif %}
+      {% endfor %}
+      {% endfor %}
     </tbody>
   </table>
-  <div  title="Supprimer l'inventaire" style="display: none;">
+  <div title="Supprimer l'inventaire" style="display: none;">
     <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>Continuer ?</p>
   </div>
 
@@ -85,5 +98,5 @@
       </div>
     </div>
   </div>
-
+</div>
 {% endblock content %}

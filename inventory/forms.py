@@ -1,25 +1,23 @@
 from typing import Any
+import django
 from django.db.models.query import QuerySet
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import ListView, DetailView, RedirectView, CreateView
 from django.contrib.auth import get_user_model
-from .models import Inventory, InventoryProductLines, ProductLotLines
+from .models import Inventory, InventoryProductLines, ProductLotLines, Zone
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django import forms
 from django.forms.models import BaseInlineFormSet, inlineformset_factory
-from dal import autocomplete
 
+class SearchForm(forms.Form):
+    num_inv = forms.ChoiceField(label="N° Comptage", widget=forms.Select(attrs={"onchange": "this.form.submit();", 'class': 'form-select'}), required=False)
+    zone = forms.ModelChoiceField(label="Zones", queryset=Zone.objects.all(), widget=forms.Select(attrs={"onchange": "_searchform_onchange_zone(event);", 'class': 'form-select'}), required=False)
+    product_ref = forms.CharField(label="Référence", widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
 
-# class InventoryForm(forms.ModelForm):
-#     class Meta:
-#         model = Inventory
-#         fields = '__all__'
-#         widgets = {
-#             'product': forms.Select(attrs={'onchange': '_onChangedProduct(event);'}),
-#         }
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 # class InventoryProductLinesForm(forms.ModelForm):
 #     product_supplier = forms.CharField(disabled=True, required=False)

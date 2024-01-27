@@ -35,7 +35,7 @@ class Zone(models.Model):
     name = models.CharField(max_length=200)
 
     def __str__(self) -> str:
-        return f"Zone : {self.name}"
+        return f"{self.name}"
     
 
 class Inventory(models.Model):

@@ -6,8 +6,8 @@ from django.urls import reverse
 from django.views.generic import ListView, DetailView, RedirectView, CreateView, UpdateView, FormView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from .models import Inventory, Product, InventoryProductLines, ProductLotLines
-from .forms import ProductLotLinesFormSet, InventoryFormSet
+from .models import Inventory, Product, InventoryProductLines, ProductLotLines, Zone
+from .forms import ProductLotLinesFormSet, InventoryFormSet, SearchForm
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django import forms
@@ -19,24 +19,38 @@ from dal import autocomplete
 
 class InventoryListView(LoginRequiredMixin, ListView):
     model = Inventory
-    context_object_name = "inventory_list" # object_list in template => book_list
+    context_object_name = "inventory_list"
     template_name = "inventory/inventory_list.html"
     ordering = ['zone', 'num_inventory']
     login_url = "account_login"
-    
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        zone_id = self.request.GET.get("zone")
+        num_inv = self.request.GET.get("num_inv")
+        product_ref = self.request.GET.get("product_ref")
+        searched_product_ids = None
+        if product_ref:
+            searched_product_ids = list(Product.objects.all().filter(Q(internal_ref__icontains=product_ref) |
+                                                           Q(old_ref__icontains=product_ref)).values_list("id", flat=True))
+        search_form = SearchForm(initial={'zone': zone_id, 'num_inv': num_inv, 'product_ref': product_ref})
+        choices = [('', '')]
+        if zone_id:
+            choices.extend([(inv.num_inventory, inv.num_inventory) for inv in Inventory.objects.all().filter(Q(zone__id=zone_id))])
+        search_form.fields["num_inv"].choices = choices
+        context['search_form'] = search_form
+        context['searched_product_ids'] = searched_product_ids
+        return context
+
     def get_queryset(self) -> QuerySet[Any]:
-        searchby = self.request.GET.get("searchby")
-        search_query = self.request.GET.get("q")
-        if not search_query:
-            return self.model.objects.all()
-        else:
-            if searchby == 'zone':
-                q_filter = Q(zone__name__icontains=search_query)
-            elif searchby == 'product':
-                q_filter = Q(product__internal_ref__icontains=search_query)
-            else:
-                q_filter = Q(num_inventory=search_query)
-            return self.model.objects.all().filter(q_filter)
+        zone_id = self.request.GET.get("zone")
+        num_inventory = self.request.GET.get("num_inv")
+        filter = Q()
+        if zone_id:
+            filter = Q(zone__id=zone_id)
+            if num_inventory:
+                filter &= Q(num_inventory=num_inventory)
+        return self.model.objects.all().filter(filter).order_by(*self.ordering)
 
 
 class InventoryCreateView(CreateView):
@@ -48,7 +62,8 @@ class InventoryCreateView(CreateView):
     ]
 
     def form_valid(self, form):
-        messages.add_message(self.request, messages.SUCCESS, "The Inventory was added.")
+        messages.add_message(self.request, messages.SUCCESS,
+                             "The Inventory was added.")
 
         return super().form_valid(form)
 
@@ -87,11 +102,13 @@ class InventoryUpdateView(SingleObjectMixin, FormView):
         If the form is valid, redirect to the supplied URL.
         """
         form.save()
-        messages.add_message(self.request, messages.SUCCESS, "Changes were saved.")
+        messages.add_message(
+            self.request, messages.SUCCESS, "Changes were saved.")
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse("inventory_list_view")
+
 
 def delete_inventory(request, pk):
     inv = Inventory.objects.get(id=pk)
@@ -101,6 +118,7 @@ def delete_inventory(request, pk):
     )
     return redirect(reverse('inventory_list_view'))
 
+
 def get_product_data(request, pk):
     try:
         product_data = Product.objects.get(id=pk)
@@ -109,12 +127,13 @@ def get_product_data(request, pk):
     except Exception as er:
         print(er)
         return HttpResponse(er, content_type='application/json')
-    
+
 
 def ProductAutocomplete(request):
     qs = Product.objects.all()
     term = request.GET.get("term")
     if term:
         qs = qs.filter(old_ref__istartswith=term)
-    data = [{"label": str(r), "value": str(r), "id": str(r.id), "option": {"selected": False}} for r in qs]
+    data = [{"label": str(r), "value": str(r), "id": str(
+        r.id), "option": {"selected": False}} for r in qs]
     return HttpResponse(json.dumps(data), content_type='application/json')

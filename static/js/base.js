@@ -37,7 +37,7 @@ function main(){
             .autocomplete({
               delay: 0,
               minLength: 0,
-              source: "http://127.0.0.1:8000/inventory/product-autocomplete",
+              source: window.location.origin + "/inventory/product-autocomplete",
             })
             .tooltip({
               classes: {
@@ -143,8 +143,7 @@ function main(){
           this.element.show();
         }
       });
-   
-      $(".product-line").find('tr.product select').first().combobox();
+      $(".product-line").find('tr.product select').combobox();
     })
 };
 function _onChangedProduct(event){
@@ -177,5 +176,17 @@ function _onClickDeleteLine(event, inventory_line_id){
     })
     dialog_div.modal('show');
     return
+}
+
+function _searchform_onchange_zone(e){
+  target = $(e.target);
+  $form = target.parents("form")
+  $form.find("#id_num_inv").val("").change();
+}
+function _seachform_clear(e){
+  target = $(e.target);
+  $form = target.parents("form")
+  $form.find("#id_product_ref").val('');
+  $form.find("#id_zone").val('').change();
 }
 main();
