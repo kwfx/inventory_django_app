@@ -119,10 +119,15 @@ def delete_inventory(request, pk):
     return redirect(reverse('inventory_list_view'))
 
 
-def get_product_data(request, pk):
+def search_product_by_oldref(request, old_ref):
     try:
-        product_data = Product.objects.get(id=pk)
-        json_data = serializers.serialize('json', [product_data])
+        res_search = Product.objects.all().filter(old_ref__istartswith=old_ref).first()
+        if res_search:
+            res_search.sale_uom = res_search.get_sale_uom_display()
+            product_data = [res_search] 
+        else:
+            product_data = []
+        json_data = serializers.serialize('json', product_data)
         return HttpResponse(json_data, content_type='application/json')
     except Exception as er:
         print(er)

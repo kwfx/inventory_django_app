@@ -1,4 +1,6 @@
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 import uuid
@@ -58,7 +60,7 @@ class Inventory(models.Model):
 class InventoryProductLines(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name="inventory_product_lines")
-
+        
     @property
     def product_supplier(self):
         return self.product.supplier

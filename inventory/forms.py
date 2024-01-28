@@ -78,7 +78,10 @@ ProductLotLinesFormSet = forms.inlineformset_factory(
     InventoryProductLines, ProductLotLines, fields='__all__',
     extra=0, can_delete=True, can_delete_extra=True,
     widgets = {
-        'expiration_date': forms.TextInput(attrs={'type': 'date'}),
+        'expiration_date': forms.TextInput(attrs={'type': 'date', 'class': 'form-control'}),
+        'quantity_uom': forms.Select(attrs={'class': 'form-select'}),
+        'quantity': forms.NumberInput(attrs={'class': 'form-control'}),
+        'lot': forms.TextInput(attrs={'class': 'form-control'}),
     }
 )
 
@@ -186,6 +189,7 @@ InventoryFormSet = inlineformset_factory(
     formset=BaseProductLotLinesFormSet,
     # We need to specify at least one Book field:
     fields=("product",),
+    widgets={'product': forms.Select(attrs={'class': 'form-select'})},
     extra=1,
     # If you don't want to be able to delete Publishers:
     # can_delete=False

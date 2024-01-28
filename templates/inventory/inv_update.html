@@ -2,7 +2,7 @@
 {% block title %}Inventaire Form{% endblock title %}
 
 {% block content %}
-  <form action="" method="post" enctype="multipart/form-data">
+  <form method="post" enctype="multipart/form-data" class="inventory_form">
 
     {% for hidden_field in form.hidden_fields %}
       {{ hidden_field.errors }}
@@ -48,51 +48,58 @@
       {% endfor %}
       
       {% if inv_form.nested %}
-      <div class="table-responsive mt-0 product-line">
-        <table class="table m-0">
-          <tbody>
+      <div class="mt-0 product-line">
+        <div class="m-0">
+              {{ inv_form.management_form }}
               <!-- formset non forms errors -->
               {% for error in inv_form.non_form_errors %}
                   <span style="color: red">{{ error }}</span>
               {% endfor %}
-              {{ inv_form.management_form }}
-              <tr id="lines-{{ forloop.counter0 }}" class="hide_all product"> 
+              <div id="lines-{{ forloop.counter0 }}" class="hide_all product row align-items-end justify-content-between"> 
                   {{ inv_form.id }}
-                  <td>
+                  <div class="col-2 search_product">
                     <div class="form-inline my-2 my-lg-0 d-flex">
-                      <input class="form-control mr-sm-2 mx-1" type="search" placeholder="Search" aria-label="Search">
-                      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                      <input class="form-control mr-sm-2 mx-1 search_input" onkeypress="if (event.keyCode == 13) _onClickSearchProduct(event)" data-toggle="tooltip" type="search" placeholder="Ancien référence" aria-label="Search">
+                      <a class="btn btn-outline-success my-2 my-sm-0" onclick="_onClickSearchProduct(event)">Search</a>
                     </div>
-                  </td>
-                  {% for field in inv_form.visible_fields %}
-                      <td {% if field.name == 'DELETE' %} style="display: none;" {% endif%}>
-                          {{field}}
-                          {% for error in field.errors %}
-                              <span style="color: red">{{ error }}</span>
-                          {% endfor %}
-                      </td>
-                  {% endfor %}
-                  <td>
-                    {{inv_form.instance.product.get_sale_uom_display }}
-                  </td>
-                  <td>
-                    {{inv_form.instance.product.supplier}}
-                  </td>
-                  <td>
+                  </div>
+                  <div class="col-2 product_field" style="display: none;">
+                      <label>Article</label>
+                      {{inv_form.product}}
+                  </div>
+                  <div class="col-2 product_delete" style="display: none;">
+                      {{inv_form.DELETE}}
+                  </div>
+                  <div class="col-2 product_internal_ref">
+                    <label>Réf Interne</label>
+                    <input class="form-control" disabled value="{{inv_form.instance.product.internal_ref }}"></input>
+                  </div>
+                  <div class="col-3 product_designation">
+                    <label>Désignation</label>
+                    <input class="form-control" disabled value="{{inv_form.instance.product.designation }}"></input>
+                  </div>
+                  <div class="col-1 product_uom_sale">
+                    <label>Unité de vente</label>
+                    <input class="form-control" disabled value="{{inv_form.instance.product.get_sale_uom_display }}"></input>
+                  </div>
+                  <div class="col-2 product_supplier">
+                    <label>Fournisseur</label>
+                    <input class="form-control" disabled value="{{inv_form.instance.product.supplier}}"></input>
+                  </div>
+                  <div class="col-1 productline_delete">
                       <a type="button" class="fa fa-trash text-danger" onclick="_onClickDeleteLine(event,'{{inv_form.instance.pk}}')"></a>
-                  </td>            
-              </tr>
-          </tbody>
-        </table>  
+                  </div>            
+                </div>
+        </div>  
         {{ inv_form.nested.management_form }}
         {{ inv_form.nested.non_form_errors }}
-        <table class="table card-header">
+        <table class="table card-header mt-4">
             <thead class="text-secondary">
                 <th>Lot</th>
-                <th>Quantité<span style="color: red;" class="required">*</span></th>
-                <th>Unité <span style="color: red;" class="required">*</span></th>
-                <th>Date péremption<span style="color: red;" class="required">*</span></th>
-                <th></th>
+                <th>Quantité</th>
+                <th>Unité </th>
+                <th>Date péremption</th>
+                <th colspan="2"></th>
             </thead>
             <tbody class="lot-lines">
                 <!-- formset non forms errors -->
@@ -101,13 +108,13 @@
                 {% endfor %}
                 <script type="text/html" id="lotline-template">
                   <tr id="lines-__prefix__" class="lot-line hide_all">
-                      {% for fields in inv_form.nested.empty_form.hidden_fields %}
-                          {{ fields }}
+                      {% for field in inv_form.nested.empty_form.hidden_fields %}
+                          {{ field }}
                       {% endfor %}
                   
-                      {% for fields in inv_form.nested.empty_form.visible_fields %}
-                        <td {% if field.name == 'DELETE' %} style="display: none;" {% endif%}>
-                          {{fields}}
+                      {% for field in inv_form.nested.empty_form.visible_fields %}
+                        <td {% if field.name == 'DELETE' %} style="display: none;" {% endif %}>
+                          {{field}}
                         </td>
                       {% endfor %}
                       <td>
@@ -148,7 +155,7 @@
     <hr>
 
     <p>
-      <input type="submit" value="Sauvegarder">
+      <button class="btn btn-success" type="submit">Enregistrer</button>
       &nbsp; &nbsp;
       <a href="{{ objectf.get_absolute_url  }}">Annuler</a>
     </p>

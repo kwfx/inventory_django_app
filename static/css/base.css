@@ -38,3 +38,16 @@
         line-height: 2em;
     }
 }
+
+.inventory_form {
+    .search_product {
+        width: 18%;
+    }
+    .product_uom_sale {
+        width: 12%;
+    }
+    .productline_delete {
+        text-align: center;
+        vertical-align: middle;
+    }
+}
