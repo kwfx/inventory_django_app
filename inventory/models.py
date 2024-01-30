@@ -50,6 +50,13 @@ class Inventory(models.Model):
     name_agent = models.CharField("Nom de l’agent d’inventaire", max_length=200)
     num_inventory = models.IntegerField("Nombre de comptage")
 
+    def clean(self):
+        super().clean()
+        already_existing = Inventory.objects.all().filter(Q(zone=self.zone) & Q(num_inventory=self.num_inventory))
+        if already_existing:
+            raise ValidationError({'num_inventory': 'Ce numéro de comptage est déjà enregisté'})
+        return True
+
     def get_absolute_url(self):
         return reverse("inventory_update", args=[self.id])
     

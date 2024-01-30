@@ -18,8 +18,22 @@ function main(){
 };
 
 function _onClickDeleteInventory(inventory_id){
-    $("#dialog-delete").find('.btn-confirm').attr('href', "/inventory/delete-inventory/" + inventory_id)
-    $("#dialog-delete").modal('show');
+    Swal.fire({
+      title: "Etes vous sûr ?",
+      text: "",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      cancelButtonText: "Annuler",
+      confirmButtonText: "Oui, Supprimer !"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch("/inventory/delete-inventory/" + inventory_id);
+        location.reload();
+      }
+    });
+    return
 }
 
 function _onClickDeleteLine(event){

@@ -1,25 +1,14 @@
 {% extends "_base.html" %}
+{% load crispy_forms_tags %}
 {% block title %}Inventaire Form{% endblock title %}
 {% block content %}
+<div class="inventory_creation_form w-25 m-auto">
   <form action="" method="post">
-
-    {% for hidden_field in form.hidden_fields %}
-      {{ hidden_field.errors }}
-      {{ hidden_field }}
-    {% endfor %}
-
     {% csrf_token %}
-
-    {{ form.non_form_errors }}
-
-    <table>
-      {{ form.as_table }}
-    </table>
-
+    {{ form|crispy }}
     <p>
-      <input type="submit" value="Add publisher">
-      &nbsp; &nbsp;
+      <button class="btn btn-success" type="submit">Enregistrer</button>
     </p>
   </form>
-
+</div>
 {% endblock content %}

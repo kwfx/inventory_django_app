@@ -1,11 +1,6 @@
 {% extends "_base.html" %}
 {% block title %}Inventaires{% endblock title %}
 {% block content %}
-{% if request.GET.not_found %}
-<span>
-  NOT FOUND
-</span>
-{% endif %}
 <div class="inventory-list">
   <div class="d-flex justify-content-between mb-2">
     <a href="{% url 'inventory_create' %}" class="btn btn-primary float-left" role="button"
@@ -25,11 +20,11 @@
     <thead style="position: sticky;top: 0;background-color: white;">
       <tr>
         <th scope="col">Zone</th>
-        <th scope="col">Nombre de comptage</th>
+        <th scope="col"># comptage</th>
         <th scope="col">Réf Interne</th>
         <th scope="col">Ancien réf</th>
         <th scope="col">Désignation</th>
-        <th scope="col">Unité de vente</th>
+        <th scope="col">UV</th>
         <th scope="col">Fournisseur</th>
         <th scope="col">Lot</th>
         <th scope="col">Quantité</th>
@@ -69,7 +64,6 @@
         <td scope="col">{{lotline.get_quantity_uom_display}}</td>
         <td scope="col">{{lotline.expiration_date|default_if_none:''}}</td>
         <td scope="col"></td>
-        <td scope="col"></td>
       </tr>
       {% endfor %}
       {% endif %}
@@ -77,26 +71,5 @@
       {% endfor %}
     </tbody>
   </table>
-  <div title="Supprimer l'inventaire" style="display: none;">
-    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>Continuer ?</p>
-  </div>
-
-  <div class="modal" id="dialog-delete" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Suppression de l'inventaire</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p>Confirmer ?</p>
-        </div>
-        <div class="modal-footer">
-          <a type="button" class="btn btn-primary btn-confirm">Oui</a>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 {% endblock content %}
