@@ -14,7 +14,6 @@ from django import forms
 from django.contrib import messages
 from django.core import serializers
 from django.views.generic.detail import SingleObjectMixin
-from dal import autocomplete
 
 
 class InventoryListView(LoginRequiredMixin, ListView):
@@ -133,12 +132,3 @@ def search_product_by_oldref(request, old_ref):
         print(er)
         return HttpResponse(er, content_type='application/json')
 
-
-def ProductAutocomplete(request):
-    qs = Product.objects.all()
-    term = request.GET.get("term")
-    if term:
-        qs = qs.filter(old_ref__istartswith=term)
-    data = [{"label": str(r), "value": str(r), "id": str(
-        r.id), "option": {"selected": False}} for r in qs]
-    return HttpResponse(json.dumps(data), content_type='application/json')

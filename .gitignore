@@ -1,6 +1,6 @@
 .venv
 db.sqlite3
-invapp_env
+venv
 .vscode
 staticfiles
 *.pyc

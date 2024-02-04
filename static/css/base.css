@@ -23,8 +23,23 @@
 }
 
 .inventory_form {
+    .inventory-form-header{
+        border-bottom: 2px solid black;
+        margin: 20px 0;
+        padding: 10px 0px;
+    }
+    .product-line{
+        outline-style: double;
+        outline-color: lightgray;
+        border-radius: 4px;
+        margin: 20px 0;
+        padding: 10px 0px;
+    }
     .search_product {
-        width: 18%;
+        width: 22%;
+        .fa-search:before {
+            vertical-align: sub;
+        }
     }
     .product_uom_sale {
         width: 12%;
@@ -32,5 +47,9 @@
     .productline_delete {
         text-align: center;
         vertical-align: middle;
+        width: 3%;
+    }
+    .lot-line td:last-child{
+        text-align: center;
     }
 }
