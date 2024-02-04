@@ -42,7 +42,7 @@
         <td scope="col">
           <a href="{% url 'inventory_update' inv.id %}" class="fa fa-edit p-2" title="Modifier"></a>
           <a type="button" class="fa fa-trash text-danger btn-delete-inventory"
-            onclick="_onClickDeleteInventory('{{inv.id}}')" title="Supprimer"></a>
+            onclick="_onClickDeleteRecord('inventory', '{{inv.id}}')" title="Supprimer"></a>
         </td>
       </tr>
       {% for prodline in inv.inventory_product_lines.all %}

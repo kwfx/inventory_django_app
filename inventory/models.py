@@ -30,7 +30,10 @@ class Product(models.Model):
         return f"{self.internal_ref} - {self.designation}"
 
     def get_absolute_url(self):
-        return reverse("product_form_view", args=[self.id])
+        return reverse("product_update", args=[self.id])
+    
+    def get_list_view_url(self):
+        return reverse("product_list_view")
 
 
 class Zone(models.Model):

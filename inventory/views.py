@@ -14,6 +14,15 @@ from django import forms
 from django.contrib import messages
 from django.core import serializers
 from django.views.generic.detail import SingleObjectMixin
+from django.apps import apps
+
+
+class ProductListView(LoginRequiredMixin, ListView):
+    model = Product
+    context_object_name = "product_list"
+    template_name = "inventory/prod_list.html"
+    ordering = ['old_ref']
+    login_url = "account_login"
 
 
 class InventoryListView(LoginRequiredMixin, ListView):
@@ -51,6 +60,19 @@ class InventoryListView(LoginRequiredMixin, ListView):
                 filter &= Q(num_inventory=num_inventory)
         return self.model.objects.all().filter(filter).order_by(*self.ordering)
 
+
+class ProductUpdateView(UpdateView):
+    model = Product
+    template_name = "inventory/product_form_view.html"
+    fields = "__all__"
+
+class ProductCreateView(CreateView):
+    model = Product
+    template_name = "inventory/product_form_view.html"
+    fields = "__all__"
+
+    def get_success_url(self):
+        return reverse('product_list_view')
 
 class InventoryCreateView(CreateView):
 
@@ -108,15 +130,13 @@ class InventoryUpdateView(SingleObjectMixin, FormView):
     def get_success_url(self):
         return reverse("inventory_list_view")
 
-
-def delete_inventory(request, pk):
-    inv = Inventory.objects.get(id=pk)
-    inv.delete()
-    messages.success(
-        request, 'Inventory deleted successfully'
-    )
-    return redirect(reverse('inventory_list_view'))
-
+def delete_record(request, model_name, pk):
+    if request.user.is_authenticated:
+        Model = apps.get_model("inventory." + model_name)
+        record = Model.objects.get(id=pk)
+        record.delete()
+        return HttpResponse(f'{model_name.capitalize()} {pk} has been deleted successfully.', status=200)
+    return HttpResponse(f'Not allowed', status=401)
 
 def search_product_by_oldref(request, old_ref):
     try:

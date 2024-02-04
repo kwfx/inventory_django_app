@@ -30,6 +30,7 @@
         <div class="justify-content-end" id="navbarNavAltMarkup">
           <div class="navbar-nav">
             <a class="nav-item nav-link" href="{% url 'inventory_list_view' %}">Inventaires</a>
+            <a class="nav-item nav-link" href="{% url 'product_list_view' %}">Articles</a>
             {% if user.is_authenticated %}
                 <a class="nav-item nav-link">Your are logged in as <b>{{ user.email }}</b></a>
                 <a class="nav-item nav-link" data-toggle="modal" data-target="#exampleModal">

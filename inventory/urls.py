@@ -1,12 +1,14 @@
 from django.urls import path
-from .views import (InventoryListView, 
-    InventoryCreateView, InventoryUpdateView, delete_inventory, search_product_by_oldref)
+from .views import (InventoryListView, ProductListView, ProductUpdateView, ProductCreateView,
+    InventoryCreateView, InventoryUpdateView, search_product_by_oldref, delete_record)
 
 urlpatterns = [
     path("", InventoryListView.as_view(), name="inventory_list_view"),
-    # path("<uuid:pk>/", InventoryFormView.as_view(), name="inventory_form_view"),
+    path("products", ProductListView.as_view(), name="product_list_view"),
     path("create/", InventoryCreateView.as_view(), name="inventory_create"),
     path('update/<uuid:pk>/', InventoryUpdateView.as_view(), name='inventory_update'),
-    path('delete-inventory/<uuid:pk>', delete_inventory, name='delete_inventory'),
+    path('product/create/', ProductCreateView.as_view(), name='product_create'),
+    path('product/update/<uuid:pk>/', ProductUpdateView.as_view(), name='product_update'),
+    path('delete/<model_name>/<uuid:pk>', delete_record, name='product_delete'),
     path('search_product_by_oldref/<old_ref>/', search_product_by_oldref, name='search_product_by_oldref'),
 ]

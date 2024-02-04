@@ -17,25 +17,6 @@ function main(){
     })
 };
 
-function _onClickDeleteInventory(inventory_id){
-    Swal.fire({
-      title: "Etes vous sûr ?",
-      text: "",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      cancelButtonText: "Annuler",
-      confirmButtonText: "Oui, Supprimer !"
-    }).then((result) => {
-      if (result.isConfirmed) {
-        fetch("/inventory/delete-inventory/" + inventory_id);
-        location.reload();
-      }
-    });
-    return
-}
-
 function _onClickDeleteLine(event){
     event.preventDefault();
     Swal.fire({
@@ -118,4 +99,23 @@ function _onClickSearchProduct(e){
       }
   }).fail((err) => console.log(err.responseText))
 }
+
+function _onClickDeleteRecord(model_name, product_id){
+  Swal.fire({
+    title: "Etes vous sûr ?",
+    text: "",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    cancelButtonText: "Annuler",
+    confirmButtonText: "Oui, Supprimer !"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch("/inventory/delete/" + model_name + "/" + product_id).then(() => {location.reload()})
+    }
+  });
+  return
+}
+
 main();

@@ -1,0 +1,38 @@
+{% extends "_base.html" %}
+{% block title %}Inventaires{% endblock title %}
+{% block content %}
+<div class="product-listview">
+  <div class="d-flex justify-content-between mb-2">
+    <a href="{% url 'product_create' %}" class="btn btn-primary float-left" role="button"
+      aria-disabled="true">Créer</a>
+  </div>
+  <table class="table table-hover">
+    <thead style="position: sticky;top: 0;background-color: white;">
+      <tr>
+        <th scope="col">Réf Interne</th>
+        <th scope="col">Ancien réf</th>
+        <th scope="col">Désignation</th>
+        <th scope="col">UV</th>
+        <th scope="col">Fournisseur</th>
+        <th scope="col" style="width: 80px;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for prod in product_list %}
+      <tr class="inv-line">
+        <td scope="col"><a>{{prod.internal_ref}}</a></td>
+        <td scope="col">{{prod.old_ref}}</td>
+        <td scope="col">{{prod.designation}}</td>
+        <td scope="col">{{prod.supplier}}</td>
+        <td scope="col">{{prod.get_sale_uom_display}}</td>
+        <td scope="col">
+          <a href="{% url 'product_update' prod.id %}" class="fa fa-edit p-2" title="Modifier"></a>
+          <a type="button" class="fa fa-trash text-danger btn-delete-product"
+            onclick="_onClickDeleteRecord('product', '{{prod.id}}')" title="Supprimer article"></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}
