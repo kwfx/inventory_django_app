@@ -19,30 +19,9 @@ class SearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-# class InventoryProductLinesForm(forms.ModelForm):
-#     product_supplier = forms.CharField(disabled=True, required=False)
+class StockImportForm(forms.Form):
+    xls_file = forms.FileField(label="Fichier Excel", required=True)
 
-#     def __init__(self, *args, **kwargs):
-#         instance = kwargs.get('instance', None)
-#         if instance:
-#             kwargs['initial'] = {'product_supplier': instance.product.supplier}
-#         super().__init__(*args, **kwargs)
-#     class Meta:
-#         model = InventoryProductLines
-#         fields = '__all__'
-
-# class ProductLotLinesForm(forms.ModelForm):
-#     class Meta:
-#         model = ProductLotLines
-#         fields = '__all__'
-#         widgets = {
-#             'expiration_date': forms.TextInput(attrs={'type': 'date'}),
-#         }
-
-# InventoryProductLinesFormSet = forms.inlineformset_factory(
-#     Inventory, InventoryProductLines, form=InventoryProductLinesForm,
-#     extra=1, can_delete=True, can_delete_extra=True
-# )
 
 def is_empty_form(form):
     """

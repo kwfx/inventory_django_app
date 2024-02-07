@@ -118,4 +118,45 @@ function _onClickDeleteRecord(model_name, product_id){
   return
 }
 
+function _onClickImportStock(event) {
+  fetch("/inventory/stock/import").then((html_data) => {
+    html_data.text().then((res) => {
+      Swal.fire({
+        title: false,
+        position: "top",
+        text: "",
+        html: res,
+        icon: false,
+        showCancelButton: false,
+        showConfirmButton: true,
+        confirmButtonText: "Importer"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const form = $(".stock_import_form form")[0];
+          const formData = new FormData(form);
+          fetch("/inventory/stock/import", {
+            method: 'POST',
+            body: formData
+          }).then((response) => {
+            if (response.ok){
+              location.href = response.url;
+            }else {
+              response.text().then((error) => {
+                Swal.fire({
+                  position: "top",
+                  text: error,
+                  icon: "error",
+                  showCancelButton: false,
+                  showConfirmButton: true,
+                  confirmButtonText: "Ok"
+                })
+              })
+            }
+          })
+        }
+      })
+    })
+
+  })
+}
 main();

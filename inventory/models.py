@@ -89,3 +89,23 @@ class ProductLotLines(models.Model):
     ], default="unit")
     expiration_date = models.DateField("Date péremption", null=True, blank=True)
     inventory_product_line = models.ForeignKey(InventoryProductLines, on_delete=models.CASCADE, related_name="product_lot_lines")
+
+
+class SystemStock(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    lot = models.CharField(max_length=200)
+    quantity = models.FloatField("Quantité")
+    quantity_uom = models.CharField(max_length=20, choices=[
+        ("unit", "Unité"),
+        ("coffret", "Coffret"),
+        ("FL", "FL"),
+        ("BTE", "Boite"),
+        ("carton", "Carton"),
+        ("mc", "MC"),
+    ], default="unit")
+    expiration_date = models.DateField("Date péremption", null=True, blank=True)

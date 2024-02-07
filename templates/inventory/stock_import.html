@@ -1,0 +1,9 @@
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="stock_import_form m-2">
+  <form action="#" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+  </form>
+</div>
+{% endblock content %}

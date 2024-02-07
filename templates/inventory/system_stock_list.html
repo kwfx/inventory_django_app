@@ -1,0 +1,40 @@
+{% extends "_base.html" %}
+{% block title %}Inventaires{% endblock title %}
+{% block content %}
+<div class="product-listview">
+  <div class="d-flex justify-content-between mb-2">
+    <a onclick="_onClickImportStock(event)" class="btn btn-primary float-left" role="button"
+      aria-disabled="true">Importer</a>
+  </div>
+  <table class="table table-hover">
+    <thead style="position: sticky;top: 0;background-color: white;">
+      <tr>
+        <th scope="col">Réf Interne</th>
+        <th scope="col">Ancien réf</th>
+        <th scope="col">Désignation</th>
+        <th scope="col">Lot</th>
+        <th scope="col">Date péremption</th>
+        <th scope="col">Quantité</th>
+        <th scope="col">UM Quantité</th>
+        <th scope="col">Fournisseur</th>
+        <th scope="col">UM Vente</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stk in stock_list %}
+      <tr class="inv-line">
+        <td scope="col">{{stk.product.internal_ref}}</td>
+        <td scope="col">{{stk.product.old_ref}}</td>
+        <td scope="col">{{stk.product.designation}}</td>
+        <td scope="col">{{stk.lot}}</td>
+        <td scope="col">{{stk.expiration_date|default_if_none:''}}</td>
+        <td scope="col">{{stk.quantity}}</td>
+        <td scope="col">{{stk.get_quantity_uom_display}}</td>
+        <td scope="col">{{stk.product.supplier}}</td>
+        <td scope="col">{{stk.product.get_sale_uom_display}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}
