@@ -1,0 +1,44 @@
+{% extends "_base.html" %}
+{% block title %}Inventaires{% endblock title %}
+{% block content %}
+<div class="product-listview">
+  <div class="d-flex justify-content-between mb-2">
+    <a onclick="_onClickImportStock(event)" class="btn btn-primary float-left" role="button"
+      aria-disabled="true">Importer</a>
+  </div>
+  <table class="table table-hover">
+    <thead style="position: sticky;top: 0;background-color: white;">
+      <tr>
+        <th scope="col">Réf Interne</th>
+        <th scope="col">Ancien réf</th>
+        <th scope="col">Désignation</th>
+        <th scope="col">Lot</th>
+        <th scope="col">Date péremption</th>
+        <th scope="col">Fournisseur</th>
+        <th scope="col">UM Vente</th>
+        <th scope="col">UM Quantité</th>
+        <th scope="col">Quantité inventaire</th>
+        <th scope="col">Quantité Système</th>
+        <th scope="col">Ecart</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in lines %}
+        <tr class="inv-line">
+          <td scope="col">{{line.internal_ref}}</td>
+          <td scope="col">{{line.old_ref}}</td>
+          <td scope="col">{{line.designation}}</td>
+          <td scope="col">{{line.lot}}</td>
+          <td scope="col">{{line.expiration_date|default_if_none:''}}</td>
+          <td scope="col">{{line.supplier}}</td>
+          <td scope="col">{{line.sale_uom}}</td>
+          <td scope="col">{{line.quantity_uom}}</td>
+          <td scope="col">{{line.quantity}}</td>
+          <td scope="col"><input class="form-control w-50" value={{line.quantity_system}}></input></td>
+          <td scope="col" class="{% if line.ecart %}bg-danger{% endif %}">{{line.ecart}}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}

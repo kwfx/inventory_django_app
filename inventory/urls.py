@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (InventoryListView, ProductListView, ProductUpdateView, ProductCreateView,
-    InventoryCreateView, InventoryUpdateView, search_product_by_oldref, delete_record, StockListView, stock_import_controller)
+    InventoryCreateView, InventoryUpdateView, search_product_by_oldref, delete_record, 
+    StockComparisonView, StockListView, stock_import_controller)
 
 urlpatterns = [
     path("", InventoryListView.as_view(), name="inventory_list_view"),
@@ -13,4 +14,5 @@ urlpatterns = [
     path('delete/<model_name>/<uuid:pk>', delete_record, name='product_delete'),
     path('search_product_by_oldref/<old_ref>/', search_product_by_oldref, name='search_product_by_oldref'),
     path('stock/import', stock_import_controller, name='stock_import_controller'),
+    path('stock_comparison/<inventory_id>/', StockComparisonView, name='stock_comparison'),
 ]

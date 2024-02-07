@@ -190,3 +190,24 @@ def stock_import_controller(request):
             return HttpResponseServerError(str(ex))
     return render(request, "inventory/stock_import.html", {"form": StockImportForm})    
 
+
+def StockComparisonView(request, inventory_id):
+    inventory = Inventory.objects.get(id=inventory_id)
+    lines = []
+    for product_line in inventory.inventory_product_lines.all():
+        for lotline in product_line.product_lot_lines.all():
+            stock_line = SystemStock.objects.filter(product=product_line.product, lot=lotline.lot).first()
+            quantity_system = stock_line.quantity if stock_line else 0
+            lines.append({
+                "internal_ref": product_line.product.internal_ref,
+                "old_ref": product_line.product.old_ref,
+                "designation": product_line.product.designation,
+                "lot": lotline.lot,
+                "expiration_date": str(lotline.expiration_date),
+                "supplier": product_line.product.supplier,
+                "quantity_uom": lotline.quantity_uom,
+                "quantity": lotline.quantity,
+                "quantity_system": quantity_system,
+                "ecart": lotline.quantity - quantity_system,
+            })
+    return render(request, "inventory/stock_comparison.html", {"lines": lines}) 

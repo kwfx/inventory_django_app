@@ -40,9 +40,12 @@
         <td scope="col">{{inv.num_inventory}}</td>
         <td scope="col" colspan="9"></td>
         <td scope="col">
-          <a href="{% url 'inventory_update' inv.id %}" class="fa fa-edit p-2" title="Modifier"></a>
-          <a type="button" class="fa fa-trash text-danger btn-delete-inventory"
-            onclick="_onClickDeleteRecord('inventory', '{{inv.id}}')" title="Supprimer"></a>
+          <div class="d-flex align-items-center">
+            <a href="{% url 'stock_comparison' inv.id %}" class="fa fa-code-compare p-2" title="Comparer"></a>
+            <a href="{% url 'inventory_update' inv.id %}" class="fa fa-edit p-2" title="Modifier"></a>
+            <a type="button" class="fa fa-trash text-danger btn-delete-inventory"
+              onclick="_onClickDeleteRecord('inventory', '{{inv.id}}')" title="Supprimer"></a>
+          </div>
         </td>
       </tr>
       {% for prodline in inv.inventory_product_lines.all %}
