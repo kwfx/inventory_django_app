@@ -1,10 +1,12 @@
 {% extends "_base.html" %}
 {% block title %}Inventaires{% endblock title %}
 {% block content %}
-<div class="product-listview">
-  <div class="d-flex justify-content-between mb-2">
+<div class="stockcomparison-listview">
+  <div class="mb-2">
     <a onclick="_onClickImportStock(event)" class="btn btn-primary float-left" role="button"
       aria-disabled="true">Importer</a>
+    <a onclick="_onClickUpdateStock(event)" class="btn btn-success" role="button" style="display: none;"
+      aria-disabled="true">Enregistrer</a>
   </div>
   <table class="table table-hover">
     <thead style="position: sticky;top: 0;background-color: white;">
@@ -24,7 +26,7 @@
     </thead>
     <tbody>
       {% for line in lines %}
-        <tr class="inv-line">
+        <tr class="inv-line" stock-line-id="{{line.stock_line_id}}">
           <td scope="col">{{line.internal_ref}}</td>
           <td scope="col">{{line.old_ref}}</td>
           <td scope="col">{{line.designation}}</td>
@@ -33,9 +35,9 @@
           <td scope="col">{{line.supplier}}</td>
           <td scope="col">{{line.sale_uom}}</td>
           <td scope="col">{{line.quantity_uom}}</td>
-          <td scope="col">{{line.quantity}}</td>
-          <td scope="col"><input class="form-control w-50" value={{line.quantity_system}}></input></td>
-          <td scope="col" class="{% if line.ecart %}bg-danger{% endif %}">{{line.ecart}}</td>
+          <td scope="col" class="qty-inv">{{line.quantity}}</td>
+          <td scope="col"><input  onchange="_onChangeSystemQty(event)" type="number"class="form-control w-50" value={{line.quantity_system}}></input></td>
+          <td scope="col" class="stock-ecart" {% if line.ecart %} style="background-color: #ff97a1" {% endif %} >{{line.ecart}}</td>
         </tr>
       {% endfor %}
     </tbody>

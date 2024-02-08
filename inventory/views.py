@@ -209,5 +209,6 @@ def StockComparisonView(request, inventory_id):
                 "quantity": lotline.quantity,
                 "quantity_system": quantity_system,
                 "ecart": lotline.quantity - quantity_system,
+                "stock_line_id": stock_line.id if stock_line else None
             })
     return render(request, "inventory/stock_comparison.html", {"lines": lines}) 

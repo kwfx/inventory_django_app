@@ -23,15 +23,17 @@
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;margin-bottom: 20px;">
-        <a class="navbar-brand fa fa-home" href="/" title="HOME"></a>
+        <a class="navbar-brand fa fa-home px-4" href="/" title="HOME"></a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="justify-content-end" id="navbarNavAltMarkup">
+        <div class="d-flex w-100 justify-content-between" id="navbarNavAltMarkup">
           <div class="navbar-nav">
             <a class="nav-item nav-link" href="{% url 'inventory_list_view' %}"><b>Inventaires</b></a>
             <a class="nav-item nav-link" href="{% url 'product_list_view' %}"><b>Articles</b></a>
             <a class="nav-item nav-link" href="{% url 'stock_list_view' %}"><b>Stock système</b></a>
+          </div>
+          <div class="navbar-nav align-items-center">
             {% if user.is_authenticated %}
                 <a class="nav-item nav-link">Your are logged in as <b>{{ user.email }}</b></a>
                 <a class="nav-item nav-link" data-toggle="modal" data-target="#exampleModal">

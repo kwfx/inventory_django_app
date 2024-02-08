@@ -158,5 +158,22 @@ function _onClickImportStock(event) {
     })
 
   })
+};
+
+_onChangeSystemQty = function(event){
+  let $input = $(event.target);
+  let $line = $input.parents(".inv-line")
+  console.log("$input.val() ::: ", $input.val())
+  $line.find('.stock-ecart').text(parseFloat($line.find('.qty-inv').text()) - parseFloat($input.val()))
+  if (parseFloat($input.val()) != parseFloat($input.attr("value"))){
+    $line.attr("changed", true);
+  }else{
+    $line.attr("changed", false)
+  }
+  if ($(".stockcomparison-listview .inv-line[changed=true]").length){
+    $(".stockcomparison-listview .btn-success").show()
+  }else{
+    $(".stockcomparison-listview .btn-success").hide()
+  }
 }
 main();
