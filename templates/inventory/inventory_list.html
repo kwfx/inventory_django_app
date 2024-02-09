@@ -2,7 +2,7 @@
 {% block title %}Inventaires{% endblock title %}
 {% block content %}
 <div class="inventory-list">
-  <div class="d-flex justify-content-between mb-2">
+  <div class="d-flex justify-content-between mb-2 py-4">
     <div class="">
       <a href="{% url 'inventory_create' %}" class="btn btn-primary float-left" role="button"
         aria-disabled="true">Créer</a>
@@ -29,7 +29,7 @@
     </form>
   </div>
   <table class="table table-hover">
-    <thead style="position: sticky;top: 0;background-color: white;">
+    <thead style="position: sticky;top: 0;">
       <tr>
         <th scope="col">Zone</th>
         <th scope="col"># comptage</th>
@@ -48,14 +48,14 @@
     <tbody>
       {% for inv in inventory_list %}
       <tr class="inv-line">
-        <td scope="col"><a>{{inv.zone.name}}</a></td>
-        <td scope="col">{{inv.num_inventory}}</td>
+        <td scope="col"><b>{{inv.zone.name}}</b></td>
+        <td scope="col"><b>{{inv.num_inventory}}</b></td>
         <td scope="col" colspan="9"></td>
         <td scope="col">
           <div class="d-flex align-items-center">
-            <a href="{% url 'stock_comparison' inv.id %}" class="fa fa-code-compare p-2" title="Comparer"></a>
-            <a href="{% url 'inventory_update' inv.id %}" class="fa fa-edit p-2" title="Modifier"></a>
-            <a type="button" class="fa fa-trash text-danger btn-delete-inventory"
+            <a href="{% url 'stock_comparison' inv.id %}" class="fa fa-code-compare p-2 text-decoration-none" title="Comparer"></a>
+            <a href="{% url 'inventory_update' inv.id %}" class="fa fa-edit p-2 text-decoration-none" title="Modifier"></a>
+            <a type="button" class="fa fa-trash text-danger btn-delete-inventory text-decoration-none"
               onclick="_onClickDeleteRecord('inventory', '{{inv.id}}')" title="Supprimer"></a>
           </div>
         </td>

@@ -4,17 +4,19 @@ function main(){
         var bootstrapButton = $.fn.button.noConflict() // return $.fn.button to previously assigned value
         $.fn.bootstrapBtn = bootstrapButton 
         $.widget.bridge('uitooltip', $.ui.tooltip);
-        $('.add-lotline').click(function(ev) {
-            ev.preventDefault();
-            target = $(ev.target);
-            let product_line = target.closest(".product-line")
-            var count = product_line.find(".lot-line").length;
-            var tmplMarkup = product_line.find('#lotline-template').html();
-            var compiledTmpl = tmplMarkup.replace(/__prefix__/g, count);
-            product_line.find('.lot-lines').append(compiledTmpl);
-            product_line.find('input[id*="TOTAL_FORMS"]').attr('value', count+1);
-        });
+        $('.add-lotline').click(_addLotLine);
     })
+};
+
+function _addLotLine(ev) {
+  ev.preventDefault();
+  target = $(ev.target);
+  let product_line = target.closest(".product-line")
+  var count = product_line.find(".lot-line").length;
+  var tmplMarkup = product_line.find('#lotline-template').html();
+  var compiledTmpl = tmplMarkup.replace(/__prefix__/g, count);
+  product_line.find('.lot-lines').append(compiledTmpl);
+  product_line.find('input[id*="TOTAL_FORMS"]').attr('value', count+1);
 };
 
 function _onClickDeleteLine(event){
@@ -163,17 +165,58 @@ function _onClickImportStock(event) {
 _onChangeSystemQty = function(event){
   let $input = $(event.target);
   let $line = $input.parents(".inv-line")
-  console.log("$input.val() ::: ", $input.val())
-  $line.find('.stock-ecart').text(parseFloat($line.find('.qty-inv').text()) - parseFloat($input.val()))
+  let ecart = parseFloat($line.find('.qty-inv').text()) - parseFloat($input.val())
+  $line.find('.stock-ecart').text(ecart)
   if (parseFloat($input.val()) != parseFloat($input.attr("value"))){
     $line.attr("changed", true);
   }else{
     $line.attr("changed", false)
+  }
+  if (ecart){
+    $line.find('.stock-ecart').addClass("stock-ecart-red");
+  }else{
+    $line.find('.stock-ecart').removeClass("stock-ecart-red");
   }
   if ($(".stockcomparison-listview .inv-line[changed=true]").length){
     $(".stockcomparison-listview .btn-success").show()
   }else{
     $(".stockcomparison-listview .btn-success").hide()
   }
-}
+};
+
+function _onClickUpdateStock(event){
+  let data = {}
+  $(".stockcomparison-listview .inv-line[changed=true]").each((i, e) => {
+    let lotline_id = $(e).attr("lot-line-id");
+    let stockline_id = $(e).attr("stock-line-id");
+    let qty_system = $(e).find(".qty-sys").val()
+    data[lotline_id] = {stockline_id, qty_system}
+  });
+  console.log(location.href.slice(0,-1), data)
+  let csrfmiddlewaretoken = $(".stockcomparison-listview").find("input[name=csrfmiddlewaretoken]").val()
+
+  fetch(location.href, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {
+      "X-CSRFToken": csrfmiddlewaretoken,
+      "Content-Type": "application/json"
+    },
+  }).then((response) => {
+    if (response.ok){
+      location.href = response.url;
+    }else {
+      response.text().then((error) => {
+        Swal.fire({
+          position: "top",
+          text: error,
+          icon: "error",
+          showCancelButton: false,
+          showConfirmButton: true,
+          confirmButtonText: "Ok"
+        })
+      })
+    }
+  })
+};
 main();

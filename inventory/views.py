@@ -192,23 +192,46 @@ def stock_import_controller(request):
 
 
 def StockComparisonView(request, inventory_id):
-    inventory = Inventory.objects.get(id=inventory_id)
-    lines = []
-    for product_line in inventory.inventory_product_lines.all():
-        for lotline in product_line.product_lot_lines.all():
-            stock_line = SystemStock.objects.filter(product=product_line.product, lot=lotline.lot).first()
-            quantity_system = stock_line.quantity if stock_line else 0
-            lines.append({
-                "internal_ref": product_line.product.internal_ref,
-                "old_ref": product_line.product.old_ref,
-                "designation": product_line.product.designation,
-                "lot": lotline.lot,
-                "expiration_date": str(lotline.expiration_date),
-                "supplier": product_line.product.supplier,
-                "quantity_uom": lotline.quantity_uom,
-                "quantity": lotline.quantity,
-                "quantity_system": quantity_system,
-                "ecart": lotline.quantity - quantity_system,
-                "stock_line_id": stock_line.id if stock_line else None
-            })
-    return render(request, "inventory/stock_comparison.html", {"lines": lines}) 
+    if request.method == "GET":
+        inventory = Inventory.objects.get(id=inventory_id)
+        lines = []
+        for product_line in inventory.inventory_product_lines.all():
+            for lotline in product_line.product_lot_lines.all():
+                stock_line = SystemStock.objects.filter(product=product_line.product, lot=lotline.lot).first()
+                quantity_system = stock_line.quantity if stock_line else 0
+                lines.append({
+                    "internal_ref": product_line.product.internal_ref,
+                    "old_ref": product_line.product.old_ref,
+                    "designation": product_line.product.designation,
+                    "lot": lotline.lot,
+                    "expiration_date": str(lotline.expiration_date),
+                    "supplier": product_line.product.supplier,
+                    "quantity_uom": lotline.quantity_uom,
+                    "quantity": lotline.quantity,
+                    "quantity_system": quantity_system,
+                    "ecart": lotline.quantity - quantity_system,
+                    "stock_line_id": stock_line.id if stock_line else None,
+                    "lotline_id": lotline.id
+                })
+        return render(request, "inventory/stock_comparison.html", {"lines": lines})
+    else:
+        try:
+            data = json.loads(request.body)
+            for lotline_id, vals in data.items():
+                lotline = ProductLotLines.objects.get(id=lotline_id)
+                if vals.get("stockline_id") == 'None':
+                    new_stock_line = SystemStock(
+                        product=lotline.inventory_product_line.product, 
+                        lot=lotline.lot,
+                        quantity=vals.get("qty_system"),
+                        quantity_uom=lotline.quantity_uom,
+                        expiration_date=lotline.expiration_date
+                    )
+                    new_stock_line.save()
+                else:
+                    stock_line = SystemStock.objects.get(id=vals.get("stockline_id"))
+                    stock_line.quantity = vals.get("qty_system")
+                    stock_line.save()
+        except Exception as ex:
+            return HttpResponseServerError(str(ex))
+        return HttpResponseRedirect(reverse("stock_comparison", args=[inventory_id]))

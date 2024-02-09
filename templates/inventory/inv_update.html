@@ -14,7 +14,7 @@
     {{ form.management_form }}
     {{ form.non_form_errors }}
 
-    <div class="inventory-form-header">
+    <div class="inventory-form-header mb-6">
       <div class="row m-0">
         <div class="col p-1 fw-bold" style="max-width:230px">
           Zone:
@@ -44,7 +44,7 @@
       
       {% if inv_form.nested %}
       <div class="mt-0 product-line">
-        <div class="m-0">
+        <div class="product-line-details">
               {{ inv_form.management_form }}
               <!-- formset non forms errors -->
               {% for error in inv_form.non_form_errors %}
@@ -88,8 +88,8 @@
         </div>  
         {{ inv_form.nested.management_form }}
         {{ inv_form.nested.non_form_errors }}
-        <table class="table card-header mt-4">
-            <thead class="text-secondary">
+        <table class="table w-100">
+            <thead class="">
                 <th>Lot</th>
                 <th>Quantité</th>
                 <th>Unité </th>
@@ -135,14 +135,8 @@
                     </tr>
                 {% endfor %}
             </tbody>
-            <tfooter>
-              <tr>
-                <td>
-                  <a href="#" class="fa fa-plus-square fs-5 add-lotline text-decoration-none"></a>
-                </td>
-              </tr>
-            </tfooter>
         </table>
+        <a href="#" class="fa fa-plus-square fs-5 add-lotline text-decoration-none mx-3"></a>
       </div>
       {% endif %}
     {% endfor %}

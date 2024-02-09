@@ -3,6 +3,7 @@
 {% block content %}
 <div class="stockcomparison-listview">
   <div class="mb-2">
+    {% csrf_token %}
     <a onclick="_onClickImportStock(event)" class="btn btn-primary float-left" role="button"
       aria-disabled="true">Importer</a>
     <a onclick="_onClickUpdateStock(event)" class="btn btn-success" role="button" style="display: none;"
@@ -26,7 +27,7 @@
     </thead>
     <tbody>
       {% for line in lines %}
-        <tr class="inv-line" stock-line-id="{{line.stock_line_id}}">
+        <tr class="inv-line" stock-line-id="{{line.stock_line_id}}" lot-line-id="{{line.lotline_id}}">
           <td scope="col">{{line.internal_ref}}</td>
           <td scope="col">{{line.old_ref}}</td>
           <td scope="col">{{line.designation}}</td>
@@ -36,8 +37,8 @@
           <td scope="col">{{line.sale_uom}}</td>
           <td scope="col">{{line.quantity_uom}}</td>
           <td scope="col" class="qty-inv">{{line.quantity}}</td>
-          <td scope="col"><input  onchange="_onChangeSystemQty(event)" type="number"class="form-control w-50" value={{line.quantity_system}}></input></td>
-          <td scope="col" class="stock-ecart" {% if line.ecart %} style="background-color: #ff97a1" {% endif %} >{{line.ecart}}</td>
+          <td scope="col"><input  onchange="_onChangeSystemQty(event)" type="number"class="form-control w-50 qty-sys" value={{line.quantity_system}}></input></td>
+          <td scope="col" class="stock-ecart {% if line.ecart %} stock-ecart-red {% endif %}">{{line.ecart}}</td>
         </tr>
       {% endfor %}
     </tbody>
