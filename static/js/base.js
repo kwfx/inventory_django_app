@@ -166,7 +166,7 @@ _onChangeSystemQty = function(event){
   let $input = $(event.target);
   let $line = $input.parents(".inv-line")
   let ecart = parseFloat($line.find('.qty-inv').text()) - parseFloat($input.val())
-  $line.find('.stock-ecart').text(ecart)
+  $line.find('.stock-ecart').text(Number(ecart).toFixed(2))
   if (parseFloat($input.val()) != parseFloat($input.attr("value"))){
     $line.attr("changed", true);
   }else{
@@ -192,9 +192,7 @@ function _onClickUpdateStock(event){
     let qty_system = $(e).find(".qty-sys").val()
     data[lotline_id] = {stockline_id, qty_system}
   });
-  console.log(location.href.slice(0,-1), data)
   let csrfmiddlewaretoken = $(".stockcomparison-listview").find("input[name=csrfmiddlewaretoken]").val()
-
   fetch(location.href, {
     method: 'POST',
     body: JSON.stringify(data),
