@@ -50,15 +50,9 @@
               {% for error in inv_form.non_form_errors %}
                   <span style="color: red">{{ error }}</span>
               {% endfor %}
-              <div id="lines-{{ forloop.counter0 }}" class="hide_all product d-flex align-items-end justify-content-between px-1"> 
+              <div id="lines-{{ forloop.counter0 }}" class="hide_all product d-flex align-items-end justify-content-between px-4"> 
                   {{ inv_form.id }}
-                  <div class="col-2 search_product">
-                    <div class="form-inline my-2 my-lg-0 d-flex">
-                      <input class="form-control mr-sm-2 mx-1 search_input" onkeypress="if (event.keyCode == 13) _onClickSearchProduct(event)" data-toggle="tooltip" type="search" placeholder="Ancien référence" aria-label="Search">
-                      <a class="btn btn-outline-success fa fa-search" onclick="_onClickSearchProduct(event)"></a>
-                    </div>
-                  </div>
-                  <div class="col-2 product_field" style="display: none;">
+                  <div class="col-3 product_field">
                       <label>Article</label>
                       {{inv_form.product}}
                   </div>
@@ -69,7 +63,7 @@
                     <label>Réf Interne</label>
                     <input class="form-control" disabled value="{{inv_form.instance.product.internal_ref }}"></input>
                   </div>
-                  <div class="col-3 product_designation">
+                  <div class="col-2 product_designation">
                     <label>Désignation</label>
                     <input class="form-control" disabled value="{{inv_form.instance.product.designation }}"></input>
                   </div>
@@ -88,61 +82,61 @@
         </div>  
         {{ inv_form.nested.management_form }}
         {{ inv_form.nested.non_form_errors }}
-        <table class="table w-100">
-            <thead class="">
-                <th>Lot</th>
-                <th>Quantité</th>
-                <th>Unité </th>
-                <th>Date péremption</th>
-                <th colspan="2"></th>
-            </thead>
-            <tbody class="lot-lines">
-                <!-- formset non forms errors -->
-                {% for error in inv_form.nested.non_form_errors %}
-                    <span style="color: red">{{ error }}</span>
-                {% endfor %}
-                <script type="text/html" id="lotline-template">
-                  <tr id="lines-__prefix__" class="lot-line hide_all">
-                      {% for field in inv_form.nested.empty_form.hidden_fields %}
-                          {{ field }}
-                      {% endfor %}
-                  
-                      {% for field in inv_form.nested.empty_form.visible_fields %}
-                        <td {% if field.name == 'DELETE' %} style="display: none;" {% endif %}>
-                          {{field}}
-                        </td>
-                      {% endfor %}
-                      <td>
-                        <a type="button" class="fa fa-trash text-danger" title="Supprimer lot" onclick="_onClickDeleteLine(event,'{{formss.instance.pk}}')"></a>
-                      </td> 
-                  </tr>
-                </script>
-                {% for formss in inv_form.nested.forms %}
-                    {{ formss.management_form }}
-                    <tr id="lot-line-{{ forloop.counter0 }}" class="hide_all lot-line"> 
-                        {{ formss.id }}
-                        {% for field in formss.visible_fields %}
-                            <td {% if field.name == 'DELETE' %} style="display: none;" {% endif%}>
-                                {{field}}
-                                {% for error in field.errors %}
-                                    <span style="color: red">{{ error }}</span>
-                                {% endfor %}
-                            </td>
+        <div class="m-3 mt-0">
+          <table class="table w-100 mb-2">
+              <thead class="">
+                  <th>Lot</th>
+                  <th>Quantité</th>
+                  <th>Unité </th>
+                  <th>Date péremption</th>
+                  <th colspan="2"></th>
+              </thead>
+              <tbody class="lot-lines">
+                  <!-- formset non forms errors -->
+                  {% for error in inv_form.nested.non_form_errors %}
+                      <span style="color: red">{{ error }}</span>
+                  {% endfor %}
+                  <script type="text/html" id="lotline-template">
+                    <tr id="lines-__prefix__" class="lot-line hide_all">
+                        {% for field in inv_form.nested.empty_form.hidden_fields %}
+                            {{ field }}
+                        {% endfor %}
+                    
+                        {% for field in inv_form.nested.empty_form.visible_fields %}
+                          <td {% if field.name == 'DELETE' %} style="display: none;" {% endif %}>
+                            {{field}}
+                          </td>
                         {% endfor %}
                         <td>
-                            <a type="button" class="fa fa-trash text-danger" title="Supprimer lot" onclick="_onClickDeleteLine(event,'{{formss.instance.pk}}')"></a>
-                        </td>            
+                          <a type="button" class="fa fa-trash text-danger" title="Supprimer lot" onclick="_onClickDeleteLine(event,'{{formss.instance.pk}}')"></a>
+                        </td> 
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <a href="#" class="fa fa-plus-square fs-5 add-lotline text-decoration-none mx-3"></a>
+                  </script>
+                  {% for formss in inv_form.nested.forms %}
+                      {{ formss.management_form }}
+                      <tr id="lot-line-{{ forloop.counter0 }}" class="hide_all lot-line"> 
+                          {{ formss.id }}
+                          {% for field in formss.visible_fields %}
+                              <td {% if field.name == 'DELETE' %} style="display: none;" {% endif%}>
+                                  {{field}}
+                                  {% for error in field.errors %}
+                                      <span style="color: red">{{ error }}</span>
+                                  {% endfor %}
+                              </td>
+                          {% endfor %}
+                          <td>
+                              <a type="button" class="fa fa-trash text-danger" title="Supprimer lot" onclick="_onClickDeleteLine(event,'{{formss.instance.pk}}')"></a>
+                          </td>            
+                      </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+          <a href="#" class="fa fa-plus-square fs-5 add-lotline text-decoration-none mx-1"></a>
+        </div>
       </div>
       {% endif %}
     {% endfor %}
-
     <hr>
-
     <p>
       <button class="btn btn-success" type="submit">Enregistrer</button>
       &nbsp; &nbsp;

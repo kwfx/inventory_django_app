@@ -149,15 +149,11 @@ def delete_record(request, model_name, pk):
         return HttpResponse(f'{model_name.capitalize()} {pk} has been deleted successfully.', status=200)
     return HttpResponse(f'Not allowed', status=401)
 
-def search_product_by_oldref(request, old_ref):
+def product_details(request, pk):
     try:
-        res_search = Product.objects.all().filter(old_ref__istartswith=old_ref).first()
-        if res_search:
-            res_search.sale_uom = res_search.get_sale_uom_display()
-            product_data = [res_search] 
-        else:
-            product_data = []
-        json_data = serializers.serialize('json', product_data)
+        prd = Product.objects.get(id=pk)
+        prd.sale_uom = prd.get_sale_uom_display()
+        json_data = serializers.serialize('json', [prd])
         return HttpResponse(json_data, content_type='application/json')
     except Exception as er:
         print(er)
@@ -235,3 +231,12 @@ def StockComparisonView(request, inventory_id):
         except Exception as ex:
             return HttpResponseServerError(str(ex))
         return HttpResponseRedirect(reverse("stock_comparison", args=[inventory_id]))
+
+
+def ProductAutocomplete(request):
+    qs = Product.objects.all()
+    term = request.GET.get("term")
+    if term:
+        qs = qs.filter(old_ref__icontains=term)
+    data = [str(r) for r in qs.values_list("id", flat=True)]
+    return HttpResponse(json.dumps(data), content_type='application/json')

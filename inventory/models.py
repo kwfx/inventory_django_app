@@ -27,7 +27,7 @@ class Product(models.Model):
     ], default="unit", verbose_name="Unité de vente")
 
     def __str__(self):
-        return f"{self.internal_ref} - {self.designation}"
+        return f"{self.old_ref} - {self.designation}"
 
     def get_absolute_url(self):
         return reverse("product_update", args=[self.id])

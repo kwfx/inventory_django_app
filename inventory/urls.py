@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (InventoryListView, ProductListView, ProductUpdateView, ProductCreateView,
-    InventoryCreateView, InventoryUpdateView, search_product_by_oldref, delete_record, 
-    StockComparisonView, StockListView, stock_import_controller)
+    InventoryCreateView, InventoryUpdateView, product_details, delete_record, 
+    StockComparisonView, StockListView, stock_import_controller, ProductAutocomplete)
 
 urlpatterns = [
     path("", InventoryListView.as_view(), name="inventory_list_view"),
@@ -12,7 +12,9 @@ urlpatterns = [
     path('product/create/', ProductCreateView.as_view(), name='product_create'),
     path('product/update/<uuid:pk>/', ProductUpdateView.as_view(), name='product_update'),
     path('delete/<model_name>/<uuid:pk>', delete_record, name='product_delete'),
-    path('search_product_by_oldref/<old_ref>/', search_product_by_oldref, name='search_product_by_oldref'),
+    path('product_details/<uuid:pk>/', product_details, name='product_details'),
     path('stock/import', stock_import_controller, name='stock_import_controller'),
     path('stock_comparison/<inventory_id>/', StockComparisonView, name='stock_comparison'),
+    path('product-autocomplete/', ProductAutocomplete, name='product_autocomplete',
+    ),
 ]

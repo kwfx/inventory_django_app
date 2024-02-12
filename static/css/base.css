@@ -23,6 +23,9 @@
     .table > thead{
         background-color: #c3e0fc;
     }
+    .lot-line td:nth-child(2){
+        border-left: 1px solid lightblue;
+    }
 }
 
 .inventory_form {
@@ -60,6 +63,15 @@
     }
     .lot-line td:last-child{
         text-align: center;
+    }
+    .custom-combobox-toggle{
+        color: black;
+        width: 20px;
+        text-align: center;
+        margin: auto;
+        transform: translateX(-125%);
+        padding: 8px;
+        background: white;
     }
 }
 
