@@ -202,6 +202,13 @@ function _searchform_onchange_zone(e) {
   $form.find("#id_num_inv").val("").change();
 }
 
+function _onChangeCompareFormZone(e) {
+  target = $(e.target);
+  $form = target.parents("form")
+  $form.find("#id_inventory_1").val("").change();
+  $form.find("#id_inventory_2").val("").change();
+}
+
 function _seachform_clear(e) {
   target = $(e.target);
   $form = target.parents("form")
@@ -324,4 +331,15 @@ function _onClickUpdateStock(event) {
     }
   })
 };
+
+function _onClickinventoryAction(action){
+  inv_ids = $('.inventory-list .inv-line-checkbox:checked').map((i ,e) => $(e).attr("data-id")).toArray()
+  if (action == 'delete'){
+    let allproms = inv_ids.reduce((proms, inv_id) => proms.concat([fetch("/inventory/delete/inventory/" + inv_id)]), [])
+    Promise.all(allproms).then(() => { location.reload()})
+  }
+  if (action == 'compare' && inv_ids.length >= 2){
+    location.href = `${window.location.origin}/inventory/compare?inventory_1=${inv_ids[0]}&inventory_2=${inv_ids[1]}`
+  }
+}
 main();

@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import os
 from typing import Any
@@ -7,11 +8,11 @@ from io import BytesIO
 from django.db.models.query import QuerySet
 from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
 from django.urls import reverse
-from django.views.generic import ListView, DetailView, RedirectView, CreateView, UpdateView, FormView
+from django.views.generic import ListView, DetailView, RedirectView, CreateView, UpdateView, FormView, TemplateView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .models import Inventory, Product, InventoryProductLines, ProductLotLines, Zone, SystemStock
-from .forms import ProductLotLinesFormSet, InventoryFormSet, SearchForm, StockImportForm
+from .forms import ProductLotLinesFormSet, InventoryFormSet, SearchForm, StockImportForm, InventoryCompareForm
 from django.http import HttpResponseRedirect, HttpResponseServerError
 from django.db.models import Q
 from django import forms
@@ -139,7 +140,7 @@ class InventoryUpdateView(SingleObjectMixin, FormView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse("inventory_list_view")
+        return reverse("inventory_update", args=[self.object.id])
 
 def delete_record(request, model_name, pk):
     if request.user.is_authenticated:
@@ -240,3 +241,116 @@ def ProductAutocomplete(request):
         qs = qs.filter(old_ref__icontains=term)
     data = [str(r) for r in qs.values_list("id", flat=True)]
     return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+def InventoryComparisonView(request, inventory_id):
+    if request.method == "GET":
+        inventory = Inventory.objects.get(id=inventory_id)
+        lines = []
+        for product_line in inventory.inventory_product_lines.all():
+            for lotline in product_line.product_lot_lines.all():
+                stock_line = SystemStock.objects.filter(product=product_line.product, lot=lotline.lot).first()
+                quantity_system = stock_line.quantity if stock_line else 0
+                lines.append({
+                    "internal_ref": product_line.product.internal_ref,
+                    "old_ref": product_line.product.old_ref,
+                    "designation": product_line.product.designation,
+                    "lot": lotline.lot,
+                    "expiration_date": str(lotline.expiration_date),
+                    "supplier": product_line.product.supplier,
+                    "quantity_uom": lotline.quantity_uom,
+                    "quantity": lotline.quantity,
+                    "quantity_system": quantity_system,
+                    "ecart": lotline.quantity - quantity_system,
+                    "stock_line_id": stock_line.id if stock_line else None,
+                    "lotline_id": lotline.id
+                })
+        return render(request, "inventory/stock_comparison.html", {"lines": lines})
+    else:
+        try:
+            data = json.loads(request.body)
+            for lotline_id, vals in data.items():
+                lotline = ProductLotLines.objects.get(id=lotline_id)
+                if vals.get("stockline_id") == 'None':
+                    new_stock_line = SystemStock(
+                        product=lotline.inventory_product_line.product, 
+                        lot=lotline.lot,
+                        quantity=vals.get("qty_system"),
+                        quantity_uom=lotline.quantity_uom,
+                        expiration_date=lotline.expiration_date
+                    )
+                    new_stock_line.save()
+                else:
+                    stock_line = SystemStock.objects.get(id=vals.get("stockline_id"))
+                    stock_line.quantity = vals.get("qty_system")
+                    stock_line.save()
+        except Exception as ex:
+            return HttpResponseServerError(str(ex))
+        return HttpResponseRedirect(reverse("stock_comparison", args=[inventory_id]))
+
+class InventoryCompareView(LoginRequiredMixin, TemplateView):
+    template_name = "inventory/inventory_comparison.html"
+    login_url = "account_login"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        inventory_1 = self.request.GET.get("inventory_1")
+        inventory_2 = self.request.GET.get("inventory_2")
+        zone = self.request.GET.get("zone")
+        CompareForm = InventoryCompareForm(initial={'inventory_1': inventory_1, 'inventory_2': inventory_2, 'zone': zone})
+        if zone:
+            CompareForm.fields["inventory_1"].queryset = Inventory.objects.all().filter(zone__id=zone)
+            if inventory_1:
+                CompareForm.fields["inventory_2"].queryset = Inventory.objects.all().filter(Q(zone__id=zone) & ~Q(id=inventory_1))
+        elif inventory_1 and inventory_2:
+            CompareForm.fields["inventory_1"].queryset = Inventory.objects.all().filter(id=inventory_1)
+            CompareForm.fields["inventory_2"].queryset = Inventory.objects.all().filter(id=inventory_2)
+        context['CompareForm'] = CompareForm
+        context['data'] = self._get_comparison_data(inventory_1, inventory_2)
+        return context
+
+    def _get_comparison_data(self, inventory_1, inventory_2):
+        data = defaultdict(list)
+        if inventory_1 and inventory_2:
+            inv1 = Inventory.objects.get(id=inventory_1)
+            inv2 = Inventory.objects.get(id=inventory_2)
+            inv1_product_ids = set(map(lambda l: l["product_id"], inv1.inventory_product_lines.all().values()))
+            inv2_product_ids = set(map(lambda l: l["product_id"], inv2.inventory_product_lines.all().values()))
+            for prodline in inv1.inventory_product_lines.all().filter(Q(product__id__in=(inv1_product_ids - inv2_product_ids))):
+                for lotline in prodline.product_lot_lines.all():
+                    lotline_values = lotline.__dict__
+                    lotline_values["quantity_inv1"] = lotline_values["quantity"]
+                    lotline_values["quantity_inv2"] = 0
+                    lotline_values["ecart"] = lotline_values["quantity_inv1"] - lotline_values["quantity_inv2"]
+                    lotline_values["quantity_uom"] = lotline.get_quantity_uom_display()
+                    data[prodline.product].append(lotline_values)
+            for product_id in (inv1_product_ids & inv2_product_ids):
+                product = Product.objects.get(id=product_id)
+                data[product] = []
+                inv1_lots_qs = inv1.inventory_product_lines.all().filter(product=product).first().product_lot_lines.all()
+                inv2_lots_qs = inv2.inventory_product_lines.all().filter(product=product).first().product_lot_lines.all()
+                inv1_lots = set(inv1_lots_qs.values_list("lot", flat=True))
+                inv2_lots = set(inv2_lots_qs.values_list("lot", flat=True))
+                for lotline in inv1_lots_qs:
+                    lotline_values = lotline.__dict__
+                    lotline_values["quantity_inv1"] = lotline_values["quantity"]
+                    lotline_inv2 = inv2_lots_qs.filter(lot=lotline.lot).first()
+                    lotline_values["quantity_inv2"] = lotline_inv2.quantity if lotline_inv2 else 0
+                    lotline_values["ecart"] = lotline_values["quantity_inv1"] - lotline_values["quantity_inv2"]
+                    data[product].append(lotline_values)
+                for lotline in inv2_lots_qs.filter(lot__in=inv2_lots-inv1_lots):
+                    lotline_values = lotline.__dict__
+                    lotline_values["quantity_inv1"] = 0
+                    lotline_values["quantity_inv2"] = lotline.quantity
+                    lotline_values["ecart"] = lotline_values["quantity_inv1"] - lotline_values["quantity_inv2"]
+                    data[product].append(lotline_values)
+                
+            for prodline in inv2.inventory_product_lines.all().filter(Q(product__id__in=(inv2_product_ids - inv1_product_ids))):
+                for lotline in prodline.product_lot_lines.all():
+                    lotline_values = lotline.__dict__
+                    lotline_values["quantity_inv1"] = 0
+                    lotline_values["quantity_inv2"] = lotline_values["quantity"]
+                    lotline_values["ecart"] = lotline_values["quantity_inv1"] - lotline_values["quantity_inv2"]
+                    lotline_values["quantity_uom"] = lotline.get_quantity_uom_display()
+                    data[prodline.product].append(lotline_values)
+        return dict(data)

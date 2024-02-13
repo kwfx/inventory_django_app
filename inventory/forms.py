@@ -174,3 +174,7 @@ InventoryFormSet = inlineformset_factory(
     # can_delete=False
 )
 
+class InventoryCompareForm(forms.Form):
+    zone = forms.ModelChoiceField(label="Zones", queryset=Zone.objects.all(), widget=forms.Select(attrs={"onchange": "_onChangeCompareFormZone(event);", 'class': 'form-select'}), required=False)
+    inventory_1 = forms.ModelChoiceField(label="Inventaire 1", queryset=Inventory.objects.none(), widget=forms.Select(attrs={"onchange": "this.form.submit()", 'class': 'form-select'}), required=True)
+    inventory_2 = forms.ModelChoiceField(label="Inventaire 2", queryset=Inventory.objects.none(), widget=forms.Select(attrs={"onchange": "this.form.submit()", 'class': 'form-select'}), required=True)

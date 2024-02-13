@@ -1,0 +1,54 @@
+{% extends "_base.html" %}
+{% block title %}Inventaires{% endblock title %}
+{% block content %}
+<div class="inventory-compare">
+  <div class="d-flex justify-content-between mb-2 py-4">
+    <form class="form-inline my-2 my-lg-0 d-flex align-items-center">
+      {{ CompareForm.zone.label_tag }}
+      {{ CompareForm.zone }}
+      {{ CompareForm.inventory_1.label_tag }}
+      {{ CompareForm.inventory_1 }}
+      {{ CompareForm.inventory_2.label_tag }}
+      {{ CompareForm.inventory_2 }}
+    </form>
+  </div>
+  <table class="table table-hover">
+    <thead style="position: sticky;top: 0;">
+      <tr>
+        <th scope="col">Réf Interne</th>
+        <th scope="col">Ancien réf</th>
+        <th scope="col">Désignation</th>
+        <th scope="col">UV</th>
+        <th scope="col">Fournisseur</th>
+        <th scope="col">Lot</th>
+        <th scope="col">Unité</th>
+        <th scope="col">Date péremption</th>
+        <th scope="col">Quantité Inv 1</th>
+        <th scope="col">Quantité Inv 2</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product, lotlines in data.items  %}
+        <tr class="prod-line">
+          <td scope="col">{{product.internal_ref}}</td>
+          <td scope="col">{{product.old_ref}}</td>
+          <td scope="col">{{product.designation}}</td>
+          <td scope="col">{{product.get_sale_uom_display}}</td>
+          <td scope="col">{{product.supplier}}</td>
+          <td scope="col" colspan="5"></td>
+        </tr>
+        {% for lotline in lotlines %}
+        <tr class="lot-line">
+          <td scope="col" colspan="5"></td>
+          <td scope="col">{{lotline.lot}}</td>
+          <td scope="col">{{lotline.quantity_uom}}</td>
+          <td scope="col">{{lotline.expiration_date|default_if_none:''}}</td>
+          <td scope="col" {% if  lotline.ecart %} style='color: red' {% endif %}>{{lotline.quantity_inv1|default_if_none:'--'}}</td>
+          <td scope="col" {% if  lotline.ecart %} style='color: red' {% endif %}>{{lotline.quantity_inv2|default_if_none:'--'}}</td>
+        </tr>
+        {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}

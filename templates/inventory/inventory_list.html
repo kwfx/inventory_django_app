@@ -11,9 +11,9 @@
           Actions
         </button>
         <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="#">Supprimer</a></li>
-          <li><a class="dropdown-item" href="#">Exporter</a></li>
-          <li><a class="dropdown-item" href="#">Comparer</a></li>
+          <li><a class="dropdown-item" href="#" onclick="_onClickinventoryAction('delete')">Supprimer</a></li>
+          <li><a class="dropdown-item" href="#" onclick="_onClickinventoryAction('export')">Exporter</a></li>
+          <li><a class="dropdown-item" href="#" onclick="_onClickinventoryAction('compare')">Comparer</a></li>
         </ul>
       </div>
     </div>
@@ -55,8 +55,7 @@
           <div class="d-flex align-items-center">
             <a href="{% url 'stock_comparison' inv.id %}" class="fa fa-code-compare p-2 text-decoration-none" title="Comparer"></a>
             <a href="{% url 'inventory_update' inv.id %}" class="fa fa-edit p-2 text-decoration-none" title="Modifier"></a>
-            <a type="button" class="fa fa-trash text-danger btn-delete-inventory text-decoration-none"
-              onclick="_onClickDeleteRecord('inventory', '{{inv.id}}')" title="Supprimer"></a>
+            <input class="inv-line-checkbox m-2" data-id="{{inv.id}}" type="checkbox"></input>
           </div>
         </td>
       </tr>

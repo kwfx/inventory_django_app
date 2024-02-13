@@ -85,3 +85,21 @@
         vertical-align: middle;
     }
 }
+
+.inventory-compare {
+    form > label {
+        text-wrap: nowrap;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    form > select {
+        margin-right: 10px;
+        width: 350px;
+    }
+    form > #id_zone{
+        width: 150px;
+    }
+    .table > thead {
+        background-color: #c3e0fc;
+    }
+}

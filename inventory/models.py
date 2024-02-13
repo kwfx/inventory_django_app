@@ -64,7 +64,7 @@ class Inventory(models.Model):
         return reverse("inventory_update", args=[self.id])
     
     def __str__(self) -> str:
-        return f"Inventaire : {self.zone} - Comptage: {self.num_inventory}"
+        return f"Comptage: {self.num_inventory} / {self.name_agent}"
     
 
 class InventoryProductLines(models.Model):

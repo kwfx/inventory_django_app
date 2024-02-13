@@ -1,10 +1,11 @@
 from django.urls import path
 from .views import (InventoryListView, ProductListView, ProductUpdateView, ProductCreateView,
     InventoryCreateView, InventoryUpdateView, product_details, delete_record, 
-    StockComparisonView, StockListView, stock_import_controller, ProductAutocomplete)
+    StockComparisonView, StockListView, stock_import_controller, ProductAutocomplete, InventoryCompareView)
 
 urlpatterns = [
     path("", InventoryListView.as_view(), name="inventory_list_view"),
+    path("compare", InventoryCompareView.as_view(), name="inventory_compare_view"),
     path("products", ProductListView.as_view(), name="product_list_view"),
     path("stock", StockListView.as_view(), name="stock_list_view"),
     path("create/", InventoryCreateView.as_view(), name="inventory_create"),
