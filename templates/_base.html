@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" type="text/css">
     <link rel="stylesheet" href="{% static 'css/sweetalert2.min.css' %}" type="text/css">
     <link href="{% static 'fontawesomefree/css/all.min.css' %}" rel="stylesheet" type="text/css">
-    <link rel = "icon" href="{% static 'images/2818757.png' %}" type = "image/x-icon"> 
     <script src="{% static 'js/base.js' %}"></script>
     <link href="{% static 'css/base.css' %}" rel="stylesheet" type="text/css">
   </head>
@@ -24,10 +23,10 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;margin-bottom: 20px;">
         <a class="navbar-brand fa fa-home px-4" href="/" title="HOME"></a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="d-flex w-100 justify-content-between" id="navbarNavAltMarkup">
+        <div class="collapse navbar-collapse text-center justify-content-between" id="navbarNavAltMarkup">
           <div class="navbar-nav">
             <a class="nav-item nav-link" href="{% url 'inventory_list_view' %}"><b>Inventaires</b></a>
             <a class="nav-item nav-link" href="{% url 'inventory_compare_view' %}"><b>Comparaison d'inventaires</b></a>
@@ -50,7 +49,7 @@
         </div>
     </nav>
     
-    <div class="container-fluid">
+    <div class="container-fluid d-flex w-100 justify-content-center">
         {% block content %}
         {% endblock content %}
     </div>

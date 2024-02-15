@@ -12,10 +12,11 @@
         </button>
         <ul class="dropdown-menu">
           <li><a class="dropdown-item" href="#" onclick="_onClickinventoryAction('delete')">Supprimer</a></li>
-          <li><a class="dropdown-item" href="#" onclick="_onClickinventoryAction('export')">Exporter</a></li>
+          <li><a class="dropdown-item" href="#" onclick="_onClickinventoryAction('export', 'inventory')">Exporter</a></li>
           <li><a class="dropdown-item" href="#" onclick="_onClickinventoryAction('compare')">Comparer</a></li>
         </ul>
       </div>
+      {% csrf_token %}
     </div>
     <form class="form-inline my-2 my-lg-0 d-flex">
       {{ search_form.zone.label_tag }}

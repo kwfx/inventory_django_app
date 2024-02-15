@@ -1,9 +1,10 @@
 from collections import defaultdict
 import json
 import os
+from io import BytesIO
 from typing import Any
 import openpyxl
-from io import BytesIO
+from xlsxwriter.workbook import Workbook
 
 from django.db.models.query import QuerySet
 from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
@@ -354,3 +355,48 @@ class InventoryCompareView(LoginRequiredMixin, TemplateView):
                     lotline_values["quantity_uom"] = lotline.get_quantity_uom_display()
                     data[prodline.product].append(lotline_values)
         return dict(data)
+
+
+def export_data(request, model_name):
+    Model = apps.get_model("inventory." + model_name)
+    ids = json.loads(request.body)
+    records = Model.objects.filter(id__in=ids)
+    output = BytesIO()
+    workbook = Workbook(output, {'in_memory': True})
+    worksheet = workbook.add_worksheet()
+    date_cell_format = workbook.add_format({'num_format': 'dd/mm/yy'})
+    if model_name == 'inventory':
+        cols_header = [
+            (10, "Zone"),
+            (20, "N° Comptage"),
+            (20, "Réf Interne"),
+            (20, "Ancien réf"),
+            (20, "Désignation"),
+            (20, "UV"),
+            (20, "Fournisseur"),
+            (20, "Lot"),
+            (20, "Quantité"),
+            (20, "Unité"),
+            (20, "Date péremption") 
+        ]
+        for col_index, (width, value) in enumerate(cols_header):
+            worksheet.set_column(col_index, col_index, width)
+            worksheet.write(0, col_index, value)
+        worksheet.freeze_panes(1, 0)
+        row = 1
+        worksheet.set_column(10, 10, cell_format=date_cell_format)
+        for record in records:
+            for prodline in record.inventory_product_lines.all():
+                for lotline in prodline.product_lot_lines.all():
+                    worksheet.write_row(row, 0, [
+                        record.zone.name, record.num_inventory, prodline.product.internal_ref, 
+                        prodline.product.old_ref, prodline.product.designation, prodline.product.get_sale_uom_display(), 
+                        prodline.product.supplier, lotline.lot, lotline.quantity, lotline.get_quantity_uom_display(), 
+                        lotline.expiration_date,    
+                    ])
+                    row += 1
+        workbook.close()
+    output.seek(0)
+    return HttpResponse(output, 
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )

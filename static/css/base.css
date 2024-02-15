@@ -1,4 +1,5 @@
 .inventory-list{
+    flex-grow: 1;
     .inv-line {
         border-top: 2px solid black;
         /* background-color: azure; */
@@ -29,6 +30,7 @@
 }
 
 .inventory_form {
+    flex-grow: 1;
     .inventory-form-header{
         border-bottom: 2px solid black;
         margin: 20px 0;
@@ -76,17 +78,20 @@
 }
 
 .stockcomparison-listview {
-    .stock-ecart-red{
-        color: #ff0019;
+    flex-grow: 1;
+    .stock-ecart{
         font-weight: bold;
     }
     .qty-inv, .qty-sys{
-        text-align: center;
         vertical-align: middle;
+    }
+    .numeric-cell{
+        text-align: right;
     }
 }
 
 .inventory-compare {
+    flex-grow: 1;
     form > label {
         text-wrap: nowrap;
         font-weight: bold;
@@ -102,4 +107,8 @@
     .table > thead {
         background-color: #c3e0fc;
     }
+}
+
+.product-listview{
+    flex-grow: 1;
 }

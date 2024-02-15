@@ -43,8 +43,8 @@
           <td scope="col">{{lotline.lot}}</td>
           <td scope="col">{{lotline.quantity_uom}}</td>
           <td scope="col">{{lotline.expiration_date|default_if_none:''}}</td>
-          <td scope="col" {% if  lotline.ecart %} style='color: red' {% endif %}>{{lotline.quantity_inv1|default_if_none:'--'}}</td>
-          <td scope="col" {% if  lotline.ecart %} style='color: red' {% endif %}>{{lotline.quantity_inv2|default_if_none:'--'}}</td>
+          <td scope="col" class="fw-bold {% if  lotline.ecart %} text-warning {% else %} text-success {% endif %}">{{lotline.quantity_inv1|default_if_none:'--'}}</td>
+          <td scope="col" class="fw-bold {% if  lotline.ecart %}  text-warning {% else %} text-success {% endif %}">{{lotline.quantity_inv2|default_if_none:'--'}}</td>
         </tr>
         {% endfor %}
       {% endfor %}

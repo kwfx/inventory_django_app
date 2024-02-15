@@ -287,9 +287,9 @@ _onChangeSystemQty = function (event) {
     $line.attr("changed", false)
   }
   if (ecart) {
-    $line.find('.stock-ecart').addClass("stock-ecart-red");
+    $line.find('.stock-ecart').addClass("text-danger");
   } else {
-    $line.find('.stock-ecart').removeClass("stock-ecart-red");
+    $line.find('.stock-ecart').removeClass("text-danger");
   }
   if ($(".stockcomparison-listview .inv-line[changed=true]").length) {
     $(".stockcomparison-listview .btn-success").show()
@@ -332,14 +332,40 @@ function _onClickUpdateStock(event) {
   })
 };
 
-function _onClickinventoryAction(action){
-  inv_ids = $('.inventory-list .inv-line-checkbox:checked').map((i ,e) => $(e).attr("data-id")).toArray()
+function _onClickinventoryAction(action, model=''){
+  let dateToday = new Date().toISOString().slice(0, 10)
+  let inv_ids = $('.inventory-list .inv-line-checkbox:checked').map((i ,e) => $(e).attr("data-id")).toArray()
+  let csrfmiddlewaretoken = $(".inventory-list").find("input[name=csrfmiddlewaretoken]").val()
   if (action == 'delete'){
     let allproms = inv_ids.reduce((proms, inv_id) => proms.concat([fetch("/inventory/delete/inventory/" + inv_id)]), [])
     Promise.all(allproms).then(() => { location.reload()})
   }
   if (action == 'compare' && inv_ids.length >= 2){
     location.href = `${window.location.origin}/inventory/compare?inventory_1=${inv_ids[0]}&inventory_2=${inv_ids[1]}`
+  }
+  if (action == 'export'){
+    if (!inv_ids.length){
+      inv_ids = $('.inventory-list .inv-line-checkbox').map((i ,e) => $(e).attr("data-id")).toArray()
+    }
+    fetch(`${window.location.origin}/inventory/export/${model}`, {
+      method: 'POST',
+      body: JSON.stringify(inv_ids),
+      headers: {
+        "X-CSRFToken": csrfmiddlewaretoken,
+        "Content-Type": "application/json"
+      },
+    }).then(response => {
+      return response.blob()
+    })
+    .then(response => {
+        const blob = new Blob([response], {type: response.type});
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `${model}-${dateToday}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+    })
   }
 }
 main();

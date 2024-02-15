@@ -36,9 +36,9 @@
           <td scope="col">{{line.supplier}}</td>
           <td scope="col">{{line.sale_uom}}</td>
           <td scope="col">{{line.quantity_uom}}</td>
-          <td scope="col" class="qty-inv">{{line.quantity|floatformat:2}}</td>
-          <td scope="col"><input  step="1" onchange="_onChangeSystemQty(event)" type="number"class="form-control w-50 qty-sys" value={{line.quantity_system|floatformat:2}}></input></td>
-          <td scope="col" class="stock-ecart {% if line.ecart %} stock-ecart-red {% endif %}">{{line.ecart|floatformat:2}}</td>
+          <td scope="col" class="qty-inv numeric-cell">{{line.quantity|floatformat:2}}</td>
+          <td scope="col"><input  step="1" onchange="_onChangeSystemQty(event)" class="form-control w-50 qty-sys numeric-cell" value={{line.quantity_system|floatformat:2}}></input></td>
+          <td scope="col" class="numeric-cell stock-ecart {% if line.ecart %} text-danger {% endif %}">{{line.ecart|floatformat:2}}</td>
         </tr>
       {% endfor %}
     </tbody>
