@@ -335,7 +335,7 @@ function _onClickUpdateStock(event) {
 function _onClickinventoryAction(action, model=''){
   let dateToday = new Date().toISOString().slice(0, 10)
   let inv_ids = $('.inventory-list .inv-line-checkbox:checked').map((i ,e) => $(e).attr("data-id")).toArray()
-  let csrfmiddlewaretoken = $(".inventory-list").find("input[name=csrfmiddlewaretoken]").val()
+  let csrfmiddlewaretoken = $("input[name=csrfmiddlewaretoken]").val()
   if (action == 'delete'){
     let allproms = inv_ids.reduce((proms, inv_id) => proms.concat([fetch("/inventory/delete/inventory/" + inv_id)]), [])
     Promise.all(allproms).then(() => { location.reload()})
@@ -347,9 +347,18 @@ function _onClickinventoryAction(action, model=''){
     if (!inv_ids.length){
       inv_ids = $('.inventory-list .inv-line-checkbox').map((i ,e) => $(e).attr("data-id")).toArray()
     }
+    if (model == 'inventory-compare'){
+      inv_ids = inv_ids.concat([
+        $("#id_inventory_1").val(),
+        $("#id_inventory_2").val(),
+      ])
+    }
+    data = {
+      ids: inv_ids
+    }
     fetch(`${window.location.origin}/inventory/export/${model}`, {
       method: 'POST',
-      body: JSON.stringify(inv_ids),
+      body: JSON.stringify(data),
       headers: {
         "X-CSRFToken": csrfmiddlewaretoken,
         "Content-Type": "application/json"
@@ -368,4 +377,5 @@ function _onClickinventoryAction(action, model=''){
     })
   }
 }
+
 main();

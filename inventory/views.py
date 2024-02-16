@@ -289,6 +289,7 @@ def InventoryComparisonView(request, inventory_id):
             return HttpResponseServerError(str(ex))
         return HttpResponseRedirect(reverse("stock_comparison", args=[inventory_id]))
 
+
 class InventoryCompareView(LoginRequiredMixin, TemplateView):
     template_name = "inventory/inventory_comparison.html"
     login_url = "account_login"
@@ -310,7 +311,8 @@ class InventoryCompareView(LoginRequiredMixin, TemplateView):
         context['data'] = self._get_comparison_data(inventory_1, inventory_2)
         return context
 
-    def _get_comparison_data(self, inventory_1, inventory_2):
+    @staticmethod
+    def _get_comparison_data(inventory_1, inventory_2):
         data = defaultdict(list)
         if inventory_1 and inventory_2:
             inv1 = Inventory.objects.get(id=inventory_1)
@@ -356,46 +358,78 @@ class InventoryCompareView(LoginRequiredMixin, TemplateView):
                     data[prodline.product].append(lotline_values)
         return dict(data)
 
-
+    
 def export_data(request, model_name):
-    Model = apps.get_model("inventory." + model_name)
-    ids = json.loads(request.body)
-    records = Model.objects.filter(id__in=ids)
     output = BytesIO()
     workbook = Workbook(output, {'in_memory': True})
     worksheet = workbook.add_worksheet()
     date_cell_format = workbook.add_format({'num_format': 'dd/mm/yy'})
-    if model_name == 'inventory':
+    records = []
+    if model_name != 'inventory-compare':
+        Model = apps.get_model("inventory." + model_name)
+        ids = json.loads(request.body).get("ids", [])
+        records = Model.objects.filter(id__in=ids)
+        if model_name == 'inventory':
+            cols_header = [
+                (10, "Zone", None),
+                (10, "N° Comptage", None),
+                (20, "Réf Interne", None),
+                (20, "Ancien réf", None),
+                (30, "Désignation", None),
+                (10, "UV", None),
+                (20, "Fournisseur", None),
+                (20, "Lot", None),
+                (10, "Quantité", None),
+                (10, "Unité", None),
+                (20, "Date péremption", date_cell_format) 
+            ]
+            for col_index, (width, value, cell_format) in enumerate(cols_header):
+                worksheet.set_column(col_index, col_index, width, cell_format=cell_format)
+                worksheet.write(0, col_index, value)
+            worksheet.freeze_panes(1, 0)
+            row = 1
+            for record in records:
+                for prodline in record.inventory_product_lines.all():
+                    for lotline in prodline.product_lot_lines.all():
+                        worksheet.write_row(row, 0, [
+                            record.zone.name, record.num_inventory, prodline.product.internal_ref, 
+                            prodline.product.old_ref, prodline.product.designation, prodline.product.get_sale_uom_display(), 
+                            prodline.product.supplier, lotline.lot, lotline.quantity, lotline.get_quantity_uom_display(), 
+                            lotline.expiration_date,    
+                        ])
+                        row += 1
+    else:
+        inv_ids = json.loads(request.body).get("ids", [])
+        red_row_format = workbook.add_format({'bold': True, 'bg_color': 'orange'})
+        comparison_data = InventoryCompareView._get_comparison_data(inv_ids[0], inv_ids[1])
         cols_header = [
-            (10, "Zone"),
-            (20, "N° Comptage"),
-            (20, "Réf Interne"),
-            (20, "Ancien réf"),
-            (20, "Désignation"),
-            (20, "UV"),
-            (20, "Fournisseur"),
-            (20, "Lot"),
-            (20, "Quantité"),
-            (20, "Unité"),
-            (20, "Date péremption") 
+            (20, "Réf Interne", None),
+            (20, "Ancien réf", None),
+            (30, "Désignation", None),
+            (10, "UV", None),
+            (20, "Fournisseur", None),
+            (20, "Lot", None),
+            (10, "Unité", None),
+            (20, "Date péremption", date_cell_format),
+            (10, "Quantité inv 1", None),
+            (10, "Quantité inv 2", None),
         ]
-        for col_index, (width, value) in enumerate(cols_header):
-            worksheet.set_column(col_index, col_index, width)
+        for col_index, (width, value, cell_format) in enumerate(cols_header):
+            worksheet.set_column(col_index, col_index, width, cell_format=cell_format)
             worksheet.write(0, col_index, value)
         worksheet.freeze_panes(1, 0)
         row = 1
-        worksheet.set_column(10, 10, cell_format=date_cell_format)
-        for record in records:
-            for prodline in record.inventory_product_lines.all():
-                for lotline in prodline.product_lot_lines.all():
-                    worksheet.write_row(row, 0, [
-                        record.zone.name, record.num_inventory, prodline.product.internal_ref, 
-                        prodline.product.old_ref, prodline.product.designation, prodline.product.get_sale_uom_display(), 
-                        prodline.product.supplier, lotline.lot, lotline.quantity, lotline.get_quantity_uom_display(), 
-                        lotline.expiration_date,    
-                    ])
-                    row += 1
-        workbook.close()
+        for product, lotlines in comparison_data.items():
+            for lotline in lotlines:
+                worksheet.write_row(row, 0, [
+                    product.internal_ref, 
+                    product.old_ref, product.designation, product.get_sale_uom_display(), 
+                    product.supplier, lotline.get("lot"), lotline.get("quantity_uom"), lotline.get("expiration_date"),
+                    lotline.get("quantity_inv1"), lotline.get("quantity_inv2")
+                ], cell_format=red_row_format if lotline.get("ecart") else None)
+                row += 1
+
+    workbook.close()
     output.seek(0)
     return HttpResponse(output, 
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
