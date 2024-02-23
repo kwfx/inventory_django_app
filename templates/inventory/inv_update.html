@@ -5,14 +5,14 @@
   <form method="post" enctype="multipart/form-data" class="inventory_form">
 
     {% for hidden_field in form.hidden_fields %}
-      {{ hidden_field.errors }}
+      {{ hidden_field.errors|default:'' }}
       {{ hidden_field }}
     {% endfor %}
 
     {% csrf_token %}
 
     {{ form.management_form }}
-    {{ form.non_form_errors }}
+    {{ form.non_form_errors|default:'' }}
 
     <div class="inventory-form-header mb-6">
       <div class="row m-0">
@@ -38,10 +38,10 @@
     </div>
 
     {% for inv_form in form.forms %}
-      {% for hidden_field in inv_form.hidden_fields %}
-        {{ hidden_field.errors }}
+          {% for hidden_field in inv_form.hidden_fields %}
+        {{ hidden_field.errors|default:''}}
       {% endfor %}
-      
+          
       {% if inv_form.nested %}
       <div class="mt-0 product-line">
         <div class="product-line-details">
@@ -80,8 +80,8 @@
                   </div>            
                 </div>
         </div>  
-        {{ inv_form.nested.management_form }}
-        {{ inv_form.nested.non_form_errors }}
+                {{ inv_form.nested.management_form }}
+        {{ inv_form.nested.non_form_errors|default:'' }}
         <div class="m-3 mt-0">
           <table class="table w-100 mb-2">
               <thead class="">
