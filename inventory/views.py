@@ -5,6 +5,7 @@ from io import BytesIO
 from typing import Any
 import openpyxl
 from xlsxwriter.workbook import Workbook
+from datetime import datetime
 
 from django.db.models.query import QuerySet
 from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
@@ -365,6 +366,7 @@ def export_data(request, model_name):
     worksheet = workbook.add_worksheet()
     date_cell_format = workbook.add_format({'num_format': 'dd/mm/yy'})
     records = []
+    date_today = datetime.now().strftime("%Y%m%d-%H%M%S")
     if model_name != 'inventory-compare':
         Model = apps.get_model("inventory." + model_name)
         ids = json.loads(request.body).get("ids", [])
@@ -431,6 +433,27 @@ def export_data(request, model_name):
 
     workbook.close()
     output.seek(0)
+    filename = f"{model_name}-{date_today}.xlsx"
     return HttpResponse(output, 
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={"Content-Disposition": f"attachment;filename='{filename}'", "filename": filename}
     )
+
+
+from django.utils.deprecation import MiddlewareMixin
+
+class SimpleMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # One-time configuration and initialization.
+
+    def __call__(self, request):
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after
+        # the view is called.
+
+        return response

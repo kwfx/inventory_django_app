@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'corsheaders',
     'django.contrib.messages',
     "whitenoise.runserver_nostatic",
     'django.contrib.staticfiles',
@@ -79,6 +80,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django.middleware.cache.FetchFromCacheMiddleware",
+    "inventory.views.SimpleMiddleware"
 ]
 
 ROOT_URLCONF = 'django_project.urls'
@@ -209,3 +211,5 @@ INTERNAL_IPS = [ip[:-1] + "1" for ip in ips]
 ALLOWED_HOSTS += INTERNAL_IPS
 print("ALLOWED_HOSTS ::: ", ALLOWED_HOSTS)
 ALLOWED_HOSTS = ['*']
+
+CORS_ALLOW_CREDENTIALS = False

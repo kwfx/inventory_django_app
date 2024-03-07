@@ -333,7 +333,6 @@ function _onClickUpdateStock(event) {
 };
 
 function _onClickinventoryAction(action, model=''){
-  let dateToday = new Date().toISOString().slice(0, 10)
   let inv_ids = $('.inventory-list .inv-line-checkbox:checked').map((i ,e) => $(e).attr("data-id")).toArray()
   let csrfmiddlewaretoken = $("input[name=csrfmiddlewaretoken]").val()
   if (action == 'delete'){
@@ -356,14 +355,16 @@ function _onClickinventoryAction(action, model=''){
     data = {
       ids: inv_ids
     }
+    let filename = ""
     fetch(`${window.location.origin}/inventory/export/${model}`, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: {
         "X-CSRFToken": csrfmiddlewaretoken,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
     }).then(response => {
+      filename = response.headers.get("filename");
       return response.blob()
     })
     .then(response => {
@@ -371,7 +372,7 @@ function _onClickinventoryAction(action, model=''){
         const downloadUrl = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = downloadUrl;
-        a.download = `${model}-${dateToday}.xlsx`;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
     })
